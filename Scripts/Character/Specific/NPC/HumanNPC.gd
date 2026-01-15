@@ -1,0 +1,2 @@
+extends BaseCharacter3D
+class_name HumanNPC

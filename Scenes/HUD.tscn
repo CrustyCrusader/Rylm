@@ -1,0 +1,42 @@
+[gd_scene load_steps=5 format=3 uid="uid://da7qcwxtmcbds"]
+
+[ext_resource type="Script" uid="uid://xawkg3end8kl" path="res://Scripts/UI/HUD.gd" id="1_sd512"]
+[ext_resource type="Texture2D" uid="uid://u03qws3g53bk" path="res://Assets/Textures/HUD/HealthBarTextureUnder.png" id="2_s3jbq"]
+[ext_resource type="Texture2D" uid="uid://fiucdovgxnve" path="res://Assets/Textures/HUD/HealthBarTextureOver.png" id="3_c3eba"]
+[ext_resource type="Texture2D" uid="uid://dt1x7n66iq5p5" path="res://Assets/Textures/HUD/HealthBarTextureProgress.png" id="4_g8s2e"]
+
+[node name="CanvasLayer" type="CanvasLayer"]
+script = ExtResource("1_sd512")
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="HealthBar" type="TextureProgressBar" parent="Control"]
+layout_mode = 1
+offset_left = 1.0000002
+offset_top = 1.9999995
+offset_right = 152.19327
+offset_bottom = 28.999998
+scale = Vector2(1.4749334, 1)
+value = 100.0
+texture_under = ExtResource("2_s3jbq")
+texture_over = ExtResource("3_c3eba")
+texture_progress = ExtResource("4_g8s2e")
+texture_progress_offset = Vector2(155.87, 50.325)
+
+[node name="StaminaBar" type="TextureProgressBar" parent="Control"]
+layout_mode = 0
+offset_top = 65.0
+offset_right = 40.0
+offset_bottom = 105.0
+scale = Vector2(8.599997, 1)
+
+[node name="WeightLabel" type="Label" parent="Control"]
+layout_mode = 0
+offset_top = 120.99999
+offset_right = 40.0
+offset_bottom = 144.0
+scale = Vector2(0.48961103, 1.4720777)

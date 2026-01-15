@@ -1,0 +1,14 @@
+SimpleInventoryUI
+Panel
+CanvasLayer
+Control
+SimpleItemPickup
+Label
+HBoxContainer
+Button
+ItemList
+VBoxContainer
+SimpleSaveSystem
+CollisionShape3D
+MeshInstance3D
+Area3D

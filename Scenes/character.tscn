@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://bh3mifppf4yax"]
+
+[sub_resource type="Resource" id="Resource_dkjbp"]
+metadata/__load_path__ = "res://Scripts/character.gd"
+
+[node name="Character" type="CharacterBody3D"]
+script = SubResource("Resource_dkjbp")
+
+[node name="CharacterContainer" type="Node3D" parent="."]
+
+[node name="CharacterModel" type="Node3D" parent="."]

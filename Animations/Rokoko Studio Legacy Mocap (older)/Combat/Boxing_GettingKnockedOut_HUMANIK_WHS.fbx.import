@@ -1,0 +1,52 @@
+[remap]
+
+importer="animation_library"
+importer_version=1
+type="AnimationLibrary"
+uid="uid://dc2646ehm125a"
+path="res://.godot/imported/Boxing_GettingKnockedOut_HUMANIK_WHS.fbx-0bed3beedb6da82ee4b6162dd0b5184f.res"
+
+[deps]
+
+source_file="res://Animations/Rokoko Studio Legacy Mocap (older)/Combat/Boxing_GettingKnockedOut_HUMANIK_WHS.fbx"
+dest_files=["res://.godot/imported/Boxing_GettingKnockedOut_HUMANIK_WHS.fbx-0bed3beedb6da82ee4b6162dd0b5184f.res"]
+
+[params]
+
+nodes/root_type=""
+nodes/root_name=""
+nodes/root_script=null
+nodes/apply_root_scale=true
+nodes/root_scale=1.0
+nodes/import_as_skeleton_bones=false
+nodes/use_name_suffixes=true
+nodes/use_node_type_suffixes=true
+meshes/ensure_tangents=true
+meshes/generate_lods=true
+meshes/create_shadow_meshes=true
+meshes/light_baking=1
+meshes/lightmap_texel_size=0.2
+meshes/force_disable_compression=false
+skins/use_named_skins=true
+animation/import=true
+animation/fps=30
+animation/trimming=true
+animation/remove_immutable_tracks=true
+animation/import_rest_as_RESET=false
+import_script/path=""
+materials/extract=0
+materials/extract_format=0
+materials/extract_path=""
+_subresources={
+"nodes": {
+"PATH:Skeleton3D": {
+"retarget/bone_map": Object(BoneMap,"resource_local_to_scene":false,"resource_name":"","profile":Object(SkeletonProfileHumanoid,"resource_local_to_scene":false,"resource_name":"","root_bone":&"Root","scale_base_bone":&"Hips","group_size":4,"bone_size":56,"script":null)
+,"bonemap":null,"bone_map/Root":&"Character1_Reference","bone_map/Hips":&"Character1_Hips","bone_map/Spine":&"Character1_Spine","bone_map/Chest":&"Character1_Spine1","bone_map/UpperChest":&"Character1_Spine2","bone_map/Neck":&"Character1_Neck","bone_map/Head":&"Character1_Head","bone_map/LeftEye":&"","bone_map/RightEye":&"","bone_map/Jaw":&"","bone_map/LeftShoulder":&"Character1_LeftShoulder","bone_map/LeftUpperArm":&"Character1_LeftArm","bone_map/LeftLowerArm":&"Character1_LeftForeArm","bone_map/LeftHand":&"Character1_LeftHand","bone_map/LeftThumbMetacarpal":&"Character1_LeftHandThumb1","bone_map/LeftThumbProximal":&"Character1_LeftHandThumb2","bone_map/LeftThumbDistal":&"Character1_LeftHandThumb3","bone_map/LeftIndexProximal":&"Character1_LeftHandIndex1","bone_map/LeftIndexIntermediate":&"Character1_LeftHandIndex2","bone_map/LeftIndexDistal":&"Character1_LeftHandIndex3","bone_map/LeftMiddleProximal":&"Character1_LeftHandMiddle1","bone_map/LeftMiddleIntermediate":&"Character1_LeftHandMiddle2","bone_map/LeftMiddleDistal":&"Character1_LeftHandMiddle3","bone_map/LeftRingProximal":&"Character1_LeftHandRing1","bone_map/LeftRingIntermediate":&"Character1_LeftHandRing2","bone_map/LeftRingDistal":&"Character1_LeftHandRing3","bone_map/LeftLittleProximal":&"Character1_LeftHandPinky1","bone_map/LeftLittleIntermediate":&"Character1_LeftHandPinky2","bone_map/LeftLittleDistal":&"Character1_LeftHandPinky3","bone_map/RightShoulder":&"Character1_RightShoulder","bone_map/RightUpperArm":&"Character1_RightArm","bone_map/RightLowerArm":&"Character1_RightForeArm","bone_map/RightHand":&"Character1_RightHand","bone_map/RightThumbMetacarpal":&"Character1_RightHandThumb1","bone_map/RightThumbProximal":&"Character1_RightHandThumb2","bone_map/RightThumbDistal":&"Character1_RightHandThumb3","bone_map/RightIndexProximal":&"Character1_RightHandIndex1","bone_map/RightIndexIntermediate":&"Character1_RightHandIndex2","bone_map/RightIndexDistal":&"Character1_RightHandIndex3","bone_map/RightMiddleProximal":&"Character1_RightHandMiddle1","bone_map/RightMiddleIntermediate":&"Character1_RightHandMiddle2","bone_map/RightMiddleDistal":&"Character1_RightHandMiddle3","bone_map/RightRingProximal":&"Character1_RightHandRing1","bone_map/RightRingIntermediate":&"Character1_RightHandRing2","bone_map/RightRingDistal":&"Character1_RightHandRing3","bone_map/RightLittleProximal":&"Character1_RightHandPinky1","bone_map/RightLittleIntermediate":&"Character1_RightHandPinky2","bone_map/RightLittleDistal":&"Character1_RightHandPinky3","bone_map/LeftUpperLeg":&"Character1_LeftUpLeg","bone_map/LeftLowerLeg":&"Character1_LeftLeg","bone_map/LeftFoot":&"Character1_LeftFoot","bone_map/LeftToes":&"Character1_LeftToeBase","bone_map/RightUpperLeg":&"Character1_RightUpLeg","bone_map/RightLowerLeg":&"Character1_RightLeg","bone_map/RightFoot":&"Character1_RightFoot","bone_map/RightToes":&"Character1_RightToeBase","script":null)
+
+}
+}
+}
+fbx/importer=0
+fbx/allow_geometry_helper_nodes=false
+fbx/embedded_image_handling=1
+fbx/naming_version=2

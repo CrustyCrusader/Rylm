@@ -1,0 +1,3 @@
+[gd_scene format=3 uid="uid://lfgg8x3vkbt1"]
+
+[node name="ItemSlot" type="Node2D"]
