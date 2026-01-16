@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://43e48qcl420u" path="res://Scripts/Character/Specific/Enemy/EnemyCharacter.gd" id="1_8uf12"]
 [ext_resource type="Texture2D" uid="uid://ctbl413cioksh" path="res://Assets/Characters_psx/Textures/Character_Killer.png" id="2_0830c"]
-[ext_resource type="Script" uid="uid://dw86lpkvjk7yn" path="res://Scripts/Character/Movement/AIController.gd" id="2_po0sg"]
+[ext_resource type="Script" uid="uid://dw86lpkvjk7yn" path="res://Scripts/Systems/AIController.gd" id="2_po0sg"]
 [ext_resource type="AnimationLibrary" uid="uid://cbeas2ffh25kh" path="res://Animations/AnimationLibrary_Godot_Standard.glb" id="3_ghaa6"]
 [ext_resource type="Script" uid="uid://4kr2wsvmu7kq" path="res://Scripts/Character/Core/StatManager.gd" id="4_1dp5w"]
 [ext_resource type="Script" uid="uid://dt6ebgjkr4fd4" path="res://Scripts/Inventory/Core/Universal_Inventory.gd" id="5_auwsv"]

@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://da7qcwxtmcbds"]
 
-[ext_resource type="Script" uid="uid://xawkg3end8kl" path="res://Scripts/UI/HUD.gd" id="1_sd512"]
+[ext_resource type="Script" uid="uid://xawkg3end8kl" path="res://Scripts/UI/HUD/HUD.gd" id="1_sd512"]
 [ext_resource type="Texture2D" uid="uid://u03qws3g53bk" path="res://Assets/Textures/HUD/HealthBarTextureUnder.png" id="2_s3jbq"]
 [ext_resource type="Texture2D" uid="uid://fiucdovgxnve" path="res://Assets/Textures/HUD/HealthBarTextureOver.png" id="3_c3eba"]
 [ext_resource type="Texture2D" uid="uid://dt1x7n66iq5p5" path="res://Assets/Textures/HUD/HealthBarTextureProgress.png" id="4_g8s2e"]

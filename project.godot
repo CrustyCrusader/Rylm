@@ -17,7 +17,9 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-Item_Database="*res://Scripts/Character/Core/item_database.gd"
+Item_Database="*res://Scripts/Autoload/item_database.gd"
+Game_State="*res://Scripts/Autoload/GameState.gd"
+Input_Manager="*res://Scripts/Autoload/InputManager.gd"
 
 [editor]
 
