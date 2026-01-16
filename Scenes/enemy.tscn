@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=4 uid="uid://cb3o0rxlwcw0y"]
+[gd_scene load_steps=19 format=4 uid="uid://cb3o0rxlwcw0y"]
 
 [ext_resource type="Script" uid="uid://43e48qcl420u" path="res://Scripts/Character/Specific/Enemy/EnemyCharacter.gd" id="1_8uf12"]
 [ext_resource type="Texture2D" uid="uid://ctbl413cioksh" path="res://Assets/Characters_psx/Textures/Character_Killer.png" id="2_0830c"]
@@ -9,6 +9,8 @@
 [ext_resource type="Script" uid="uid://bc3qf8uqwigtu" path="res://Scripts/Character/Core/equipment_manager.gd" id="6_8uf12"]
 [ext_resource type="Script" uid="uid://ctx1wbk37o6om" path="res://Scripts/Character/Core/FactionComponent.gd" id="7_auwsv"]
 [ext_resource type="Script" uid="uid://b5fiky1kq3i45" path="res://Scripts/Character/Movement/MovementController.gd" id="7_po0sg"]
+[ext_resource type="Script" uid="uid://bxffh8r2a00ap" path="res://Scripts/Character/Combat/CombatComponent.gd" id="10_haro7"]
+[ext_resource type="Script" uid="uid://cxvlkn110yky7" path="res://Scripts/Character/Movement/NavigationComponent.gd" id="11_56vhr"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_auwsv"]
 radius = 0.765625
@@ -441,3 +443,11 @@ metadata/_custom_type_script = "uid://ctx1wbk37o6om"
 [node name="MovementController" type="Node" parent="."]
 script = ExtResource("7_po0sg")
 metadata/_custom_type_script = "uid://b5fiky1kq3i45"
+
+[node name="CombatComponent" type="Node" parent="."]
+script = ExtResource("10_haro7")
+metadata/_custom_type_script = "uid://bxffh8r2a00ap"
+
+[node name="NavigationComponent" type="Node" parent="."]
+script = ExtResource("11_56vhr")
+metadata/_custom_type_script = "uid://cxvlkn110yky7"

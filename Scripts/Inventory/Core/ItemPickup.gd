@@ -1,43 +1,69 @@
-# SimpleItemPickup.gd
+# ItemPickup.gd
 extends Area3D
-class_name SimpleItemPickup
+class_name ItemPickup
 
-@export var item_id: String = "medkit_basic"
+@export var item_id: String = "apple"
 @export var quantity: int = 1
+@export var can_respawn: bool = false
+@export var respawn_time: float = 30.0
 
-@onready var mesh = $MeshInstance3D
-@onready var collision = $CollisionShape3D
+var item_resource: Resource
+var is_active: bool = true
 
-var item_data: Resource = null
-var spin_speed: float = 1.0
+@onready var mesh_instance = $MeshInstance3D
+@onready var collision_shape = $CollisionShape3D
 
 func _ready():
 	# Load item from database
-	var item_db = get_node("/root/ItemDatabase")
-	if item_db and item_db.has_method("get_item"):
-		item_data = item_db.get_item(item_id)
+	var item_database = get_node_or_null("/root/ItemDatabase")
+	if item_database and item_database.has_method("get_item_resource"):
+		item_resource = item_database.get_item_resource(item_id)
 	
-	if item_data:
-		print("Item pickup created: %s x%d" % [item_data.has("display_name", "Unknown"), quantity])
-	
-	# Floating animation
-	var tween = create_tween()
-	tween.set_loops()
-	tween.tween_property(self, "position:y", position.y + 0.3, 1.0)
-	tween.tween_property(self, "position:y", position.y, 1.0)
-	
-	# Connect signal
-	body_entered.connect(_on_body_entered)
+	# Update appearance based on item
+	update_appearance()
 
-func _physics_process(delta):
-	# Spin slowly
-	rotate_y(delta * spin_speed)
+func update_appearance():
+	if not is_active:
+		mesh_instance.visible = false
+		collision_shape.disabled = true
+		return
+	
+	# Here you could set mesh, material, etc. based on item_resource
+	if item_resource and item_resource.has("icon_texture"):
+		# Apply texture if available
+		pass
 
 func _on_body_entered(body):
-	if body.is_in_group("player") and body.has_method("add_item") and item_data:
-		var success = body.add_item(item_data, quantity)
-		if success:
-			print("Picked up: %s x%d" % [item_data.has("display_name", "Item"), quantity])
-			queue_free()
+	if not is_active:
+		return
+	
+	if body.has_method("add_item_to_inventory"):
+		if body.add_item_to_inventory(item_id, quantity):
+			print("Item picked up: ", item_id, " x", quantity)
+			if can_respawn:
+				respawn_item()
+			else:
+				queue_free()
 		else:
-			print("Couldn't pick up %s (inventory full?)" % item_data.has("display_name", "Item"))
+			print("Inventory full, couldn't pick up: ", item_id)
+
+func respawn_item():
+	is_active = false
+	update_appearance()
+	
+	await get_tree().create_timer(respawn_time).timeout
+	
+	is_active = true
+	update_appearance()
+	print("Item respawned: ", item_id)
+
+func set_item(new_item_id: String, new_quantity: int = 1):
+	item_id = new_item_id
+	quantity = new_quantity
+	
+	# Reload item resource
+	var item_database = get_node_or_null("/root/ItemDatabase")
+	if item_database and item_database.has_method("get_item_resource"):
+		item_resource = item_database.get_item_resource(item_id)
+	
+	update_appearance()

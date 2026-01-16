@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=4 uid="uid://vrsnwscyw7ad"]
+[gd_scene load_steps=19 format=4 uid="uid://vrsnwscyw7ad"]
 
 [ext_resource type="Script" uid="uid://b72wlbyxhvmvy" path="res://Scripts/Character/Specific/Player/PlayerCharacter.gd" id="1_f1ek2"]
 [ext_resource type="Texture2D" uid="uid://dilfv4f7wvfce" path="res://Assets/Characters_psx/Textures/Character_01.png" id="2_6t5aa"]
@@ -7,7 +7,11 @@
 [ext_resource type="Script" uid="uid://dt6ebgjkr4fd4" path="res://Scripts/Inventory/Core/Universal_Inventory.gd" id="5_8erm5"]
 [ext_resource type="Script" uid="uid://bc3qf8uqwigtu" path="res://Scripts/Character/Core/equipment_manager.gd" id="6_f1ek2"]
 [ext_resource type="Script" uid="uid://ctx1wbk37o6om" path="res://Scripts/Character/Core/FactionComponent.gd" id="8_f1ek2"]
+[ext_resource type="Script" uid="uid://b5fiky1kq3i45" path="res://Scripts/Character/Movement/MovementController.gd" id="8_pu2lt"]
 [ext_resource type="Script" uid="uid://ywdts2qjxlhi" path="res://Scripts/Character/Movement/PlayerMovementController.gd" id="9_f1ek2"]
+[ext_resource type="Script" uid="uid://bxffh8r2a00ap" path="res://Scripts/Character/Combat/CombatComponent.gd" id="9_gymyn"]
+[ext_resource type="Script" uid="uid://d7vgr6y1yyyv" path="res://Scripts/Character/Combat/DefenseComponent.gd" id="10_pu2lt"]
+[ext_resource type="Script" uid="uid://xha4sjl68pxn" path="res://Scripts/Character/Combat/StatusEffectsComponent.gd" id="11_ukyrk"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_cvnsp"]
 height = 4.7807617
@@ -649,6 +653,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.493153, 0)
 
 [node name="Camera3D" type="Camera3D" parent="Camera_Mount"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.2999085, 1.7273746, 5.3193793)
+current = true
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2732005, 0)
@@ -926,15 +931,23 @@ script = ExtResource("8_f1ek2")
 metadata/_custom_type_script = "uid://ctx1wbk37o6om"
 
 [node name="MovementController" type="Node" parent="."]
-script = ExtResource("9_f1ek2")
+script = ExtResource("8_pu2lt")
 metadata/_custom_type_script = "uid://b5fiky1kq3i45"
+
+[node name="CombatComponent" type="Node" parent="."]
+script = ExtResource("9_gymyn")
+metadata/_custom_type_script = "uid://bxffh8r2a00ap"
+
+[node name="DefenseComponent" type="Node" parent="."]
+script = ExtResource("10_pu2lt")
+metadata/_custom_type_script = "uid://d7vgr6y1yyyv"
+
+[node name="StatusEffectsComponent" type="Node" parent="."]
+script = ExtResource("11_ukyrk")
+metadata/_custom_type_script = "uid://xha4sjl68pxn"
 
 [node name="PlayerMovementController" type="Node" parent="."]
 script = ExtResource("9_f1ek2")
-walk_speed = 10.0
-run_speed = 30.0
-acceleration = 25.0
-deceleration = 15.0
 metadata/_custom_type_script = "uid://ywdts2qjxlhi"
 
 [connection signal="animation_finished" from="AnimationPlayer" to="." method="_on_animation_player_animation_finished"]

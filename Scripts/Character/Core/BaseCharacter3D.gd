@@ -1,212 +1,132 @@
+# Scripts/Character/Core/BaseCharacter3D.gd
 extends CharacterBody3D
 class_name BaseCharacter3D
 
-#region Core Systems
-@onready var stats: StatManager = $StatManager
-@onready var inventory: UniversalInventory = $InventorySystem
-@onready var equipment: EquipmentManager = $EquipmentManager
-@onready var faction: FactionComponent = $FactionComponent
-@onready var movement: MovementController = $MovementController
-#endregion
+# Core components (will be set up if nodes exist)
+@onready var stats = $StatManager as StatManager
+var inventory: UniversalInventory
+var equipment: EquipmentManager
+var movement: MovementController
 
-#region Character Identity
+# Character identity
 @export var character_name: String = "Unnamed"
 @export var character_race: String = "human"
 @export var character_type: String = "player"
 var unique_id: String = ""
-#endregion
 
-#region State Management
+# State management
 var is_alive: bool = true
 var is_conscious: bool = true
-var current_action: String = "idle"
-var movement_state: String = "standing"
-var movement_locked: bool = false  
-#endregion
+var movement_locked: bool = false
+
+# Systems (will be initialized if nodes exist)
+var skill_system: SkillSystem
+var class_system: ClassSystem
+var survival_system: SurvivalSystem
+var body_parts: BodyPartSystem
+
+# Signals
+signal character_died()
+signal character_damaged(damage: float, damage_type: String)
+signal inventory_updated()
 
 func _ready():
 	generate_unique_id()
-	initialize_character()
-	print("Character spawned: ", character_name, " (", character_race, " ", character_type, ")")
-
-func generate_unique_id():
-	unique_id = str(get_instance_id()) + "_" + str(Time.get_unix_time_from_system())
+	call_deferred("initialize_character")
+	print("Character spawned: ", character_name)
 
 func initialize_character():
-	# Setup all components
-	if stats:
-		stats.character = self
-		if stats.has_method("initialize_stats"):
-			stats.initialize_stats(character_race, character_type)
+	print("Initializing character: ", character_name)
 	
-	if inventory:
-		inventory.character = self
+	# Initialize core components
+	initialize_core_components()
+	
+	# Find and initialize other systems
+	find_and_initialize_systems()
+	
+	# Connect signals
+	connect_system_signals()
+	
+	print("Character initialization complete")
+
+func initialize_core_components():
+	# Initialize inventory if node exists
+	var inventory_node = get_node_or_null("UniversalInventory")
+	if inventory_node and inventory_node is UniversalInventory:
+		inventory = inventory_node
 		if inventory.has_method("initialize_inventory"):
 			inventory.initialize_inventory()
 	
-	if equipment:
-		# FIXED: Use proper property/method checking
-		# Check if equipment has a 'character' property by trying to set it
-		var script = equipment.get_script()
-		if script:
-			# Try to set character property if it exists in the script
-			equipment.set("character", self)
-		
-		# Alternatively, if equipment has a set_character method, use it
-		if equipment.has_method("set_character"):
-			equipment.set_character(self)
-		
-		# Initialize equipment
-		if equipment.has_method("initialize_equipment"):
-			equipment.initialize_equipment()
-	
-	if faction:
-		faction.character = self
-		if faction.has_method("initialize_faction"):
-			faction.initialize_faction(character_race, character_type)
-	
-	if movement:
-		print("DEBUG: Setting movement.character = ", self)
-		movement.character = self
-		print("DEBUG: movement.character is now: ", movement.character)
-
-func _physics_process(delta):
-	if not is_alive or not is_conscious:
-		return
-	
-	# Update stats (stamina drain, hunger, etc.)
+	# Initialize stats if node exists
 	if stats:
-		stats.process_stats(delta)
+		stats.character = self
 	
-	# Apply encumbrance effects to movement
-	if inventory and movement:
-		var encumbrance_multiplier = inventory.get_encumbrance_speed_multiplier()
-		movement.set_speed_multiplier(encumbrance_multiplier)
-	
-	# Handle movement
-	if movement:
-		movement.process_movement(delta)
-	
-	move_and_slide()
+	# Initialize movement if node exists
+	var movement_node = get_node_or_null("MovementController")
+	if movement_node and movement_node is MovementController:
+		movement = movement_node
+		movement.character = self
 
-#region Public API
-# BaseCharacter3D.gd - Update take_damage method
-func take_damage(amount: float, damage_type: String = "physical", attacker = null):
+func find_and_initialize_systems():
+	# Find and initialize skill system
+	var skill_node = get_node_or_null("SkillSystem")
+	if skill_node and skill_node is SkillSystem:
+		skill_system = skill_node
+		skill_system.character = self
+	
+	# Find and initialize class system
+	var class_node = get_node_or_null("ClassSystem")
+	if class_node and class_node is ClassSystem:
+		class_system = class_node
+		class_system.character = self
+	
+	# Find and initialize survival system
+	var survival_node = get_node_or_null("SurvivalSystem")
+	if survival_node and survival_node is SurvivalSystem:
+		survival_system = survival_node
+		survival_system.character = self
+	
+	# Find and initialize body parts system
+	var body_parts_node = get_node_or_null("BodyPartSystem")
+	if body_parts_node and body_parts_node is BodyPartSystem:
+		body_parts = body_parts_node
+		body_parts.character = self
+
+func connect_system_signals():
+	if inventory and inventory.has_signal("inventory_updated"):
+		inventory.inventory_updated.connect(_on_inventory_updated)
+
+func _on_inventory_updated():
+	inventory_updated.emit()
+
+func take_damage(amount: float, damage_type: String = "physical", _attacker = null) -> float:  # Fixed: added underscore
 	if not is_alive:
-		return 0  # Return 0 if already dead
+		return 0.0
 	
-	var final_damage = amount
+	print(character_name, " taking ", amount, " ", damage_type, " damage")
 	
-	# Apply defense reductions if we have equipment
-	if equipment:
-		final_damage = equipment.calculate_damage_reduction(final_damage, damage_type)
+	var damage_to_deal = min(amount, stats.current_health if stats else amount)
 	
-	# Store the damage that will be dealt
-	var damage_to_deal = min(final_damage, stats.current_health)
+	if stats:
+		stats.take_damage(amount)
 	
-	stats.take_damage(final_damage)
-	
-	if stats.current_health <= 0:
+	if stats and stats.current_health <= 0:
 		die()
-	elif attacker:
-		on_attacked(attacker)
+	elif _attacker:  # Now we can use the attacker parameter
+		on_attacked(_attacker)
 	
-	return damage_to_deal  # Return the actual damage dealt
+	character_damaged.emit(damage_to_deal, damage_type)
+	
+	return damage_to_deal
+
+# ADD THIS FUNCTION: on_attacked
+func on_attacked(attacker):
+	print(character_name, " was attacked by ", attacker.character_name if attacker and attacker.has_method("get_character_name") else "unknown")
+	# You can add more logic here, like aggro, counter-attack, etc.
 
 func heal(amount: float):
-	if is_alive:
+	if is_alive and stats:
 		stats.heal(amount)
-
-func use_stamina(amount: float) -> bool:
-	return stats.use_stamina(amount)
-
-func can_perform_action(stamina_cost: float = 0.0) -> bool:
-	if not is_alive or not is_conscious:
-		return false
-	
-	if stamina_cost > 0:
-		return stats.current_stamina >= stamina_cost
-	
-	return true
-
-func add_item(item_data, quantity: int = 1) -> bool:
-	if inventory:
-		return inventory.add_item(item_data, quantity)
-	return false
-
-func remove_item(item_id: String, quantity: int = 1) -> bool:
-	if inventory:
-		return inventory.remove_item(item_id, quantity)
-	return false
-
-# FIXED: Changed return type from bool to Variant
-func get_item_data(item_id: String) -> Variant:
-	if inventory:
-		return inventory.get_item_data(item_id)
-	return null
-
-func equip_item(item_data, slot: String = "") -> Dictionary:
-	if equipment:
-		return equipment.equip_item(item_data, slot)
-	return {}
-
-func unequip_item(slot: String) -> Variant:
-	if equipment:
-		return equipment.unequip_item(slot)
-	return {}
-
-func has_item(item_id: String, quantity: int = 1) -> bool:
-	if inventory:
-		return inventory.has_item(item_id, quantity)
-	return false
-
-func get_item_count(item_id: String) -> int:
-	if inventory:
-		return inventory.get_item_count(item_id)
-	return 0
-
-# FIXED: Changed return type from bool to Dictionary
-func get_character_summary() -> Dictionary:
-	var health_value = 0.0
-	var stamina_value = 0.0
-	var inventory_weight = 0.0
-	var encumbrance_level = "none"
-	var equipment_summary = {}
-	var faction_info = {}
-	
-	if stats:
-		health_value = stats.current_health
-		stamina_value = stats.current_stamina
-	
-	if inventory:
-		inventory_weight = inventory.get_current_weight()
-		encumbrance_level = inventory.get_encumbrance_level()
-	
-	if equipment:
-		equipment_summary = equipment.get_equipment_summary()
-	
-	if faction:
-		faction_info = faction.get_faction_info()
-	
-	var summary = {
-		"name": character_name,
-		"race": character_race,
-		"type": character_type,
-		"alive": is_alive,
-		"health": health_value,
-		"stamina": stamina_value,
-		"inventory_weight": inventory_weight,
-		"encumbrance_level": encumbrance_level,
-		"equipment": equipment_summary,
-		"faction": faction_info
-	}
-	return summary
-#endregion
-
-#region Event Handlers
-func on_attacked(attacker):
-	print(character_name, " was attacked by ", attacker.character_name if attacker else "unknown")
-	# Can be overridden by specific character types
 
 func die():
 	is_alive = false
@@ -216,11 +136,27 @@ func die():
 	if inventory:
 		inventory.drop_all_items(global_position)
 	
-	# Play death animation
-	if has_node("AnimationPlayer"):
-		$AnimationPlayer.play("AnimationLibrary_Godot_Standard/Death01")
-	
-	# Schedule removal
-	await get_tree().create_timer(3.0).timeout
-	queue_free()
-#endregion
+	character_died.emit()
+
+func generate_unique_id():
+	var timestamp = str(Time.get_unix_time_from_system())
+	var random = str(randi() % 10000)
+	unique_id = timestamp + "_" + random
+	print("Generated unique ID: ", unique_id)
+
+# Fixed: added underscore to unused delta parameter
+func _physics_process(_delta: float):
+	# Base physics processing (can be empty or have basic logic)
+	# This allows child classes to call super._physics_process(delta)
+	pass
+
+# Simple helper methods for testing
+func test_injury():
+	if body_parts:
+		body_parts.apply_damage(BodyPartSystem.BodyPart.LEFT_ARM, 25.0)
+		print("Test injury applied to left arm")
+
+func test_heal():
+	if stats:
+		stats.heal(20.0)
+		print("Healed 20 health")

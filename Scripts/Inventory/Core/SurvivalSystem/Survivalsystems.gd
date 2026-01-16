@@ -1,123 +1,147 @@
-extends Node
+# Survival/SurvivalSystems.gd
 class_name SurvivalSystem
+extends Node
 
-# Survival needs
-var hunger: float = 0.0  # 0 = full, 100 = starving
-var thirst: float = 0.0  # 0 = hydrated, 100 = dehydrated
-var fatigue: float = 0.0  # 0 = rested, 100 = exhausted
+# Signals
+signal hunger_changed(new_value: float, old_value: float)
+signal thirst_changed(new_value: float, old_value: float)
+signal fatigue_changed(new_value: float, old_value: float)
+signal body_temperature_changed(new_temp: float, old_temp: float)
+signal need_critical(need_type: String, value: float)
+
+# Survival stats
+var hunger: float = 0.0
+var thirst: float = 0.0
+var fatigue: float = 0.0
 var body_temperature: float = 37.0  # Celsius
-var infection_level: float = 0.0  # 0 = healthy, 100 = severely infected
 
-# Rates (per real-time minute)
-var hunger_rate: float = 0.5
-var thirst_rate: float = 0.8
-var fatigue_rate: float = 0.3
-var infection_rate: float = 0.0  # Depends on injuries
+# Rates (per second)
+var hunger_rate: float = 0.1
+var thirst_rate: float = 0.15
+var fatigue_rate: float = 0.05
+var temperature_change_rate: float = 0.01
 
-# Effects
-var hunger_effects: Dictionary = {}
-var thirst_effects: Dictionary = {}
-var fatigue_effects: Dictionary = {}
-var infection_effects: Dictionary = {}
+# Critical thresholds
+var critical_hunger: float = 90.0
+var critical_thirst: float = 90.0
+var critical_fatigue: float = 90.0
+var critical_temperature_low: float = 35.0
+var critical_temperature_high: float = 39.0
 
-signal needs_updated(hunger: float, thirst: float, fatigue: float)
-signal infection_changed(level: float)
-signal body_temperature_changed(temp: float)
+# Character reference
+var character: BaseCharacter3D
 
-func _ready():
-	print("SurvivalSystem initialized")
-	load_effect_thresholds()
+func initialize(character_ref: BaseCharacter3D) -> void:
+	character = character_ref
+	print("SurvivalSystem initialized for: ", character.character_name)
 
-func _process(delta):
-	# Convert delta to approximate real-time (adjust as needed)
-	var real_time_factor = delta * 60.0  # Assuming 1 sec game time = 1 sec real time
+func _process(delta: float) -> void:
+	process_needs(delta)
+	process_temperature(delta)
+	check_critical_needs()
+
+func process_needs(delta: float) -> void:
+	# Update hunger
+	var old_hunger = hunger
+	hunger = min(hunger + hunger_rate * delta, 100.0)
+	if abs(hunger - old_hunger) > 0.1:
+		hunger_changed.emit(hunger, old_hunger)
 	
-	# Update needs
-	hunger = min(100.0, hunger + hunger_rate * real_time_factor)
-	thirst = min(100.0, thirst + thirst_rate * real_time_factor)
-	fatigue = min(100.0, fatigue + fatigue_rate * real_time_factor)
+	# Update thirst
+	var old_thirst = thirst
+	thirst = min(thirst + thirst_rate * delta, 100.0)
+	if abs(thirst - old_thirst) > 0.1:
+		thirst_changed.emit(thirst, old_thirst)
 	
-	# Update infection if there are open wounds
-	update_infection(delta)
-	
-	# Emit signals
-	needs_updated.emit(hunger, thirst, fatigue)
+	# Update fatigue
+	var old_fatigue = fatigue
+	fatigue = min(fatigue + fatigue_rate * delta, 100.0)
+	if abs(fatigue - old_fatigue) > 0.1:
+		fatigue_changed.emit(fatigue, old_fatigue)
 
-func eat(food_value: float, hydration: float = 0.0):
-	hunger = max(0.0, hunger - food_value)
-	thirst = max(0.0, thirst - hydration)
-	print("Ate food: Hunger -", food_value, ", Thirst -", hydration)
+func process_temperature(delta: float) -> void:
+	if not character:
+		return
+	
+	var old_temp = body_temperature
+	
+	# Environmental temperature effect (simplified)
+	var environment_temp = get_environment_temperature()
+	var temp_difference = environment_temp - body_temperature
+	
+	# Adjust body temperature toward environment
+	body_temperature += temp_difference * temperature_change_rate * delta
+	
+	# Clamp to reasonable range
+	body_temperature = clamp(body_temperature, 30.0, 42.0)
+	
+	if abs(body_temperature - old_temp) > 0.1:
+		body_temperature_changed.emit(body_temperature, old_temp)
 
-func drink(hydration_value: float):
-	thirst = max(0.0, thirst - hydration_value)
-	print("Drank: Thirst -", hydration_value)
+func get_environment_temperature() -> float:
+	# Simplified: return base temperature
+	return 20.0  # 20°C room temperature
 
-func rest(rest_value: float):
-	fatigue = max(0.0, fatigue - rest_value)
-	print("Rested: Fatigue -", rest_value)
+func check_critical_needs() -> void:
+	if hunger >= critical_hunger:
+		need_critical.emit("hunger", hunger)
+	
+	if thirst >= critical_thirst:
+		need_critical.emit("thirst", thirst)
+	
+	if fatigue >= critical_fatigue:
+		need_critical.emit("fatigue", fatigue)
+	
+	if body_temperature <= critical_temperature_low:
+		need_critical.emit("temperature_low", body_temperature)
+	elif body_temperature >= critical_temperature_high:
+		need_critical.emit("temperature_high", body_temperature)
 
-func update_infection(delta: float):
-	# Infection grows from untreated wounds
-	# Base infection rate from environment + wound contribution
-	var wound_infection_risk = 0.0
-	
-	# This would come from BodyPartSystem
-	# For now, simulate
-	wound_infection_risk = randf() * 0.1
-	
-	infection_rate = wound_infection_risk
-	infection_level = min(100.0, infection_level + infection_rate * delta)
-	
-	if infection_level > 0:
-		infection_changed.emit(infection_level)
+func eat(food_value: float) -> void:
+	var old_hunger = hunger
+	hunger = max(hunger - food_value, 0.0)
+	hunger_changed.emit(hunger, old_hunger)
 
-func treat_infection(treatment_strength: float):
-	infection_level = max(0.0, infection_level - treatment_strength)
-	print("Infection treated: -", treatment_strength, " now at ", infection_level)
+func drink(drink_value: float) -> void:
+	var old_thirst = thirst
+	thirst = max(thirst - drink_value, 0.0)
+	thirst_changed.emit(thirst, old_thirst)
 
-func load_effect_thresholds():
-	# Define effects at different need levels
-	hunger_effects = {
-		30.0: {"stamina_regen": -0.2, "health_regen": -0.1},
-		60.0: {"stamina_regen": -0.5, "health_regen": -0.3, "strength": -0.1},
-		90.0: {"stamina_regen": -0.8, "health_regen": -0.7, "strength": -0.3, "health_drain": 0.5}
-	}
-	
-	thirst_effects = {
-		30.0: {"stamina_max": -0.1, "stamina_regen": -0.3},
-		60.0: {"stamina_max": -0.3, "stamina_regen": -0.6, "health_regen": -0.2},
-		90.0: {"stamina_max": -0.5, "stamina_regen": -0.9, "health_regen": -0.5, "health_drain": 1.0}
-	}
-	
-	fatigue_effects = {
-		40.0: {"stamina_regen": -0.3, "movement_speed": -0.1},
-		70.0: {"stamina_regen": -0.6, "movement_speed": -0.2, "accuracy": -0.2},
-		90.0: {"stamina_regen": -0.9, "movement_speed": -0.4, "accuracy": -0.4, "chance_to_fall": 0.1}
-	}
+func rest(rest_value: float) -> void:
+	var old_fatigue = fatigue
+	fatigue = max(fatigue - rest_value, 0.0)
+	fatigue_changed.emit(fatigue, old_fatigue)
 
-func get_current_effects() -> Dictionary:
-	var effects = {}
-	
-	# Combine effects from all needs
-	for threshold in hunger_effects.keys():
-		if hunger >= threshold:
-			effects.merge(hunger_effects[threshold], true)
-	
-	for threshold in thirst_effects.keys():
-		if thirst >= threshold:
-			effects.merge(thirst_effects[threshold], true)
-	
-	for threshold in fatigue_effects.keys():
-		if fatigue >= threshold:
-			effects.merge(fatigue_effects[threshold], true)
-	
-	return effects
+func warm_up(amount: float) -> void:
+	var old_temp = body_temperature
+	body_temperature = min(body_temperature + amount, 37.5)
+	body_temperature_changed.emit(body_temperature, old_temp)
 
-func get_needs() -> Dictionary:
+func cool_down(amount: float) -> void:
+	var old_temp = body_temperature
+	body_temperature = max(body_temperature - amount, 36.5)
+	body_temperature_changed.emit(body_temperature, old_temp)
+
+func set_rates(new_hunger_rate: float, new_thirst_rate: float, new_fatigue_rate: float) -> void:
+	hunger_rate = new_hunger_rate
+	thirst_rate = new_thirst_rate
+	fatigue_rate = new_fatigue_rate
+
+func get_need_levels() -> Dictionary:
 	return {
 		"hunger": hunger,
 		"thirst": thirst,
 		"fatigue": fatigue,
-		"infection": infection_level,
 		"body_temperature": body_temperature
 	}
+
+func are_needs_critical() -> bool:
+	return (hunger >= critical_hunger or 
+			thirst >= critical_thirst or 
+			fatigue >= critical_fatigue or
+			body_temperature <= critical_temperature_low or
+			body_temperature >= critical_temperature_high)
+
+# Helper to emit temperature signal
+func emit_temperature_signal(new_temp: float, old_temp: float) -> void:
+	body_temperature_changed.emit(new_temp, old_temp)

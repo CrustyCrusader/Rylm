@@ -1,79 +1,141 @@
-# Core/TreatmentSystem.gd
-extends Node
+# Health/TreatmentSystem.gd
 class_name TreatmentSystem
+extends Node
 
+# Signals
+signal treatment_applied(treatment_type: String, injury_id: String)
+signal treatment_failed(treatment_type: String, reason: String)
+
+# Character reference
+var character: BaseCharacter3D
+
+# Treatment types
 enum TreatmentType {
-	BANDAGE,
-	STITCH,
 	DISINFECT,
 	SPLINT,
-	PAIN_MED,
-	ANTIBIOTICS
+	PAIN_MEDICATION,
+	ANTIBIOTICS,
+	BANDAGE,
+	SURGERY
 }
 
-# Treatment items needed
-var treatment_requirements = {
-	TreatmentType.BANDAGE: ["bandage", 1],
-	TreatmentType.STITCH: ["suture_kit", 1, "disinfectant", 1],
-	TreatmentType.DISINFECT: ["disinfectant", 1, "bandage", 1],
-	TreatmentType.SPLINT: ["splint", 1, "bandage", 2],
-	TreatmentType.PAIN_MED: ["painkillers", 1],
-	TreatmentType.ANTIBIOTICS: ["antibiotics", 1]
+# Treatment requirements
+var treatment_requirements: Dictionary = {
+	"disinfect": [{"item": "alcohol", "quantity": 1}, {"item": "bandage", "quantity": 1}],
+	"splint": [{"item": "splint", "quantity": 1}],
+	"pain_med": [{"item": "painkillers", "quantity": 1}],
+	"antibiotics": [{"item": "antibiotics", "quantity": 1}],
+	"bandage": [{"item": "bandage", "quantity": 1}],
+	"surgery": [{"item": "surgical_kit", "quantity": 1}]
 }
 
-func apply_treatment(body_part_system: BodyPartSystem, part: BodyPartSystem.BodyPart, 
-					treatment: TreatmentType, inventory: Node) -> bool:
-	
-	# Check if player has required items
-	if not has_required_items(treatment, inventory):
-		print("Missing items for treatment: ", TreatmentType.keys()[treatment])
+func initialize(character_ref: BaseCharacter3D) -> void:
+	character = character_ref
+	print("TreatmentSystem initialized for: ", character.character_name)
+
+func apply_treatment(treatment_type: String, injury_id: String) -> bool:
+	if not character or not character.is_alive:
+		treatment_failed.emit(treatment_type, "Character not available")
 		return false
 	
-	var body_part = body_part_system.body_parts.get(part)
-	if not body_part:
+	if not has_required_items(treatment_type):
+		treatment_failed.emit(treatment_type, "Missing required items")
 		return false
 	
-	# Apply treatment effects
-	match treatment:
-		TreatmentType.BANDAGE:
-			return apply_bandage(body_part)
-		TreatmentType.STITCH:
-			return apply_stitch(body_part)
-		TreatmentType.DISINFECT:
-			return apply_disinfect(body_part)
-		TreatmentType.SPLINT:
-			return apply_splint(body_part)
-		TreatmentType.PAIN_MED:
-			return apply_pain_med(body_part)
-		TreatmentType.ANTIBIOTICS:
-			return apply_antibiotics(body_part)
+	# Apply specific treatment
+	match treatment_type:
+		"disinfect":
+			return apply_disinfect(injury_id)
+		"splint":
+			return apply_splint(injury_id)
+		"pain_med":
+			return apply_pain_med(injury_id)
+		"antibiotics":
+			return apply_antibiotics(injury_id)
+		"bandage":
+			return apply_bandage(injury_id)
+		"surgery":
+			return apply_surgery(injury_id)
+		_:
+			treatment_failed.emit(treatment_type, "Unknown treatment type")
+			return false
+
+func has_required_items(treatment_type: String) -> bool:
+	if treatment_type not in treatment_requirements:
+		return false
 	
+	var requirements = treatment_requirements[treatment_type]
+	for req in requirements:
+		var item_id = req.get("item", "")
+		var quantity = req.get("quantity", 1)
+		if not character.inventory.has_item(item_id, quantity):
+			return false
+	
+	return true
+
+func consume_required_items(treatment_type: String) -> bool:
+	if treatment_type not in treatment_requirements:
+		return false
+	
+	var requirements = treatment_requirements[treatment_type]
+	for req in requirements:
+		var item_id = req.get("item", "")
+		var quantity = req.get("quantity", 1)
+		if not character.inventory.remove_item(item_id, quantity):
+			return false
+	
+	return true
+
+func apply_disinfect(injury_id: String) -> bool:
+	print("Applying disinfect to injury: ", injury_id)
+	# Add disinfect logic here
+	if consume_required_items("disinfect"):
+		treatment_applied.emit("disinfect", injury_id)
+		return true
 	return false
 
-func apply_bandage(body_part):
-	body_part.bandaged = true
-	# Reduce bleeding rate
-	for injury in body_part.injuries:
-		if injury.type in [BodyPartSystem.InjuryType.SCRATCH, BodyPartSystem.InjuryType.CUT]:
-			injury.bleed_rate *= 0.2
-	print("Bandage applied")
-	return true
+func apply_splint(injury_id: String) -> bool:
+	print("Applying splint to injury: ", injury_id)
+	# Add splint logic here
+	if consume_required_items("splint"):
+		treatment_applied.emit("splint", injury_id)
+		return true
+	return false
 
-func apply_stitch(body_part):
-	# Remove deep wounds and severe cuts
-	var new_injuries = []
-	for injury in body_part.injuries:
-		if injury.type == BodyPartSystem.InjuryType.DEEP_WOUND:
-			# Convert to regular cut
-			injury.type = BodyPartSystem.InjuryType.CUT
-			injury.severity *= 0.5
-			new_injuries.append(injury)
-		elif injury.type == BodyPartSystem.InjuryType.CUT:
-			injury.severity *= 0.3
-			new_injuries.append(injury)
-		else:
-			new_injuries.append(injury)
-	body_part.injuries = new_injuries
-	body_part.bandaged = true
-	print("Wound stitched")
-	return true
+func apply_pain_med(injury_id: String) -> bool:
+	print("Applying pain medication to injury: ", injury_id)
+	# Add pain med logic here
+	if consume_required_items("pain_med"):
+		treatment_applied.emit("pain_med", injury_id)
+		return true
+	return false
+
+func apply_antibiotics(injury_id: String) -> bool:
+	print("Applying antibiotics to injury: ", injury_id)
+	# Add antibiotics logic here
+	if consume_required_items("antibiotics"):
+		treatment_applied.emit("antibiotics", injury_id)
+		return true
+	return false
+
+func apply_bandage(injury_id: String) -> bool:
+	print("Applying bandage to injury: ", injury_id)
+	# Add bandage logic here
+	if consume_required_items("bandage"):
+		treatment_applied.emit("bandage", injury_id)
+		return true
+	return false
+
+func apply_surgery(injury_id: String) -> bool:
+	print("Applying surgery to injury: ", injury_id)
+	# Add surgery logic here
+	if consume_required_items("surgery"):
+		treatment_applied.emit("surgery", injury_id)
+		return true
+	return false
+
+func get_treatment_requirements(treatment_type: String) -> Array:
+	return treatment_requirements.get(treatment_type, [])
+
+func can_perform_treatment(treatment_type: String) -> bool:
+	return has_required_items(treatment_type)

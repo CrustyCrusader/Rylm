@@ -1,6 +1,4 @@
-[gd_scene load_steps=4 format=3 uid="uid://bnoetfgaepy7c"]
-
-[ext_resource type="Script" uid="uid://dcx6gikwvutsd" path="res://Scripts/SaveSystem.gd" id="2_vgvbt"]
+[gd_scene load_steps=3 format=3 uid="uid://bnoetfgaepy7c"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_3upgh"]
 
@@ -13,7 +11,3 @@ shape = SubResource("SphereShape3D_3upgh")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 mesh = SubResource("SphereMesh_wv3i5")
-
-[node name="SimpleSaveSystem" type="Node" parent="."]
-script = ExtResource("2_vgvbt")
-metadata/_custom_type_script = "uid://dcx6gikwvutsd"

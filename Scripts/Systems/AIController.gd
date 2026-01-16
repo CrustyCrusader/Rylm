@@ -1,12 +1,11 @@
 extends Node
 class_name AIController
 
-#region AI States
+# AI States
 enum AIState { IDLE, PATROL, CHASE, ATTACK, INVESTIGATE }
-var current_state = AIState.PATROL
-#endregion
+var current_state: AIState = AIState.PATROL
 
-#region AI Properties
+# AI Properties
 @export var patrol_points: Array[Vector3] = []
 @export var move_speed: float = 4.0
 @export var run_speed: float = 6.0
@@ -14,16 +13,14 @@ var current_state = AIState.PATROL
 @export var attack_range: float = 2.0
 @export var fov_angle: float = 45.0
 @export var fov_distance: float = 15.0
-#endregion
 
-#region Runtime Variables
+# Runtime Variables
 var character: BaseCharacter3D = null
 var target = null
 var patrol_index: int = 0
 var investigate_position: Vector3 = Vector3.ZERO
-#endregion
 
-func _ready():
+func _ready() -> void:
 	character = get_parent()
 	if not character:
 		push_error("AIController must be a child of a character!")
@@ -31,23 +28,26 @@ func _ready():
 	# Initialize patrol points if empty
 	if patrol_points.is_empty():
 		initialize_default_patrol_points()
-
-func initialize_default_patrol_points():
-	# Create default patrol points around current position
-	var positions = [
-		Vector3(5, 0, 0),
-		Vector3(0, 0, 5),
-		Vector3(-5, 0, 0),
-		Vector3(0, 0, -5)
-	]
 	
-	for pos in positions:
-		patrol_points.append(character.global_position + pos)
+	print("AIController ready for ", character.character_name)
 
-func process_ai(delta):
+func initialize_default_patrol_points() -> void:
+	# Create default patrol points around current position
+	if character:
+		var base_pos = character.global_position
+		patrol_points = [
+			base_pos + Vector3(5, 0, 0),
+			base_pos + Vector3(0, 0, 5),
+			base_pos + Vector3(-5, 0, 0),
+			base_pos + Vector3(0, 0, -5)
+		]
+		print("Generated default patrol points")
+
+func process_ai(delta: float) -> void:
 	if not character or not character.is_alive:
 		return
 	
+	# Process current state
 	match current_state:
 		AIState.IDLE:
 			process_idle(delta)
@@ -60,12 +60,13 @@ func process_ai(delta):
 		AIState.INVESTIGATE:
 			process_investigate(delta)
 
-#region State Processing
-func process_idle(_delta):
-	if character.movement:
+# State Processing
+func process_idle(_delta: float) -> void:
+	if character and character.movement:
 		character.movement.set_move_state(character.movement.MoveState.STANDING)
+		character.velocity = Vector3.ZERO
 
-func process_patrol(_delta):
+func process_patrol(delta: float) -> void:
 	if patrol_points.is_empty():
 		set_state(AIState.IDLE)
 		return
@@ -74,35 +75,39 @@ func process_patrol(_delta):
 	var direction = (target_pos - character.global_position).normalized()
 	direction.y = 0
 	
-	if character.movement:
+	# Use MovementController for movement
+	if character and character.movement:
 		character.movement.set_move_state(character.movement.MoveState.WALKING)
-		character.velocity.x = direction.x * move_speed
-		character.velocity.z = direction.z * move_speed
+		character.movement.process_movement(delta, direction)
+	
+	# Rotate toward movement direction
+	if direction.length() > 0.1:
 		character.look_at(character.global_position + direction, Vector3.UP)
 	
 	# Check if reached point
 	if character.global_position.distance_to(target_pos) < 1.5:
+		# Go to next point
 		patrol_index = (patrol_index + 1) % patrol_points.size()
 		set_state(AIState.IDLE)
 		# Return to patrol after idle
-		await get_tree().create_timer(1.0).timeout
+		await get_tree().create_timer(randf_range(1.0, 3.0)).timeout
 		set_state(AIState.PATROL)
 
-func process_chase(_delta):
+func process_chase(delta: float) -> void:
 	if not target or not is_instance_valid(target):
 		set_state(AIState.PATROL)
 		return
 	
-	# Only print state changes, not every frame
-	# print(character.character_name, " chasing ", target.character_name)
-	
 	var direction = (target.global_position - character.global_position).normalized()
 	direction.y = 0
 	
-	if character.movement:
+	# Use MovementController for movement
+	if character and character.movement:
 		character.movement.set_move_state(character.movement.MoveState.RUNNING)
-		character.velocity.x = direction.x * run_speed
-		character.velocity.z = direction.z * run_speed
+		character.movement.process_movement(delta, direction)
+	
+	# Face target
+	if direction.length() > 0.1:
 		character.look_at(target.global_position, Vector3.UP)
 	
 	# Check attack range
@@ -112,7 +117,7 @@ func process_chase(_delta):
 	elif distance > detection_range * 1.5:
 		target_lost()
 
-func process_attack(_delta):
+func process_attack(_delta: float) -> void:
 	if not target or not is_instance_valid(target):
 		set_state(AIState.PATROL)
 		return
@@ -123,51 +128,49 @@ func process_attack(_delta):
 	if direction.length() > 0:
 		character.look_at(target.global_position, Vector3.UP)
 	
-	# Stop moving while attacking
-	character.velocity = Vector3.ZERO
-	
 	# Let EnemyCharacter handle actual attack timing
-	# We just check if target moved away
 	var distance = character.global_position.distance_to(target.global_position)
 	if distance > attack_range * 1.5:
 		set_state(AIState.CHASE)
-		
+
+func process_investigate(delta: float) -> void:
+	if investigate_position == Vector3.ZERO:
+		set_state(AIState.PATROL)
+		return
 	
-func process_investigate(_delta):
 	var direction = (investigate_position - character.global_position).normalized()
 	direction.y = 0
 	
-	if character.movement:
+	if character and character.movement:
 		character.movement.set_move_state(character.movement.MoveState.WALKING)
-		character.velocity.x = direction.x * move_speed
-		character.velocity.z = direction.z * move_speed
+		character.movement.process_movement(delta, direction)
+	
+	# Face investigation direction
+	if direction.length() > 0.1:
 		character.look_at(character.global_position + direction, Vector3.UP)
 	
 	# Reached investigation point
 	if character.global_position.distance_to(investigate_position) < 1.5:
 		set_state(AIState.PATROL)
-#endregion
 
-#region Public API
-func set_state(new_state):
+# Public API
+func set_state(new_state: AIState) -> void:
 	if current_state == new_state:
 		return
 	
 	current_state = new_state
-	
-	# Print state changes (only when state actually changes)
-	print(character.character_name, " state: ", AIState.keys()[new_state])
+	print(character.character_name, " AI state: ", AIState.keys()[new_state])
 
-func set_target(new_target):
+func set_target(new_target) -> void:
 	target = new_target
 
-func target_lost():
+func target_lost() -> void:
 	target = null
 	set_state(AIState.PATROL)
 	print(character.character_name, " lost target, returning to patrol")
 
 func can_see_target(check_target) -> bool:
-	if not check_target:
+	if not check_target or not is_instance_valid(check_target):
 		return false
 	
 	var distance = character.global_position.distance_to(check_target.global_position)
@@ -179,4 +182,3 @@ func can_see_target(check_target) -> bool:
 	var angle = rad_to_deg(forward.angle_to(direction_to_target))
 	
 	return angle <= fov_angle
-#endregion
