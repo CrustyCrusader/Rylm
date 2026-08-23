@@ -118,7 +118,7 @@ func add_item(item_data: Resource, quantity: int = 1) -> bool:
 func remove_item(item_id: String, quantity: int = 1) -> bool:
 	for i in range(items.size() - 1, -1, -1):
 		var item = items[i]
-		if item["item_data"].id == item_id:
+		if item["item_data"].item_id == item_id: 
 			var remove_count = min(quantity, item["quantity"])
 			current_weight -= item["item_data"].weight_kg * remove_count
 			item["quantity"] -= remove_count
@@ -198,14 +198,14 @@ func drop_all_items(drop_position: Vector3):
 
 func get_item_data(item_id: String) -> Variant:  # FIXED: Returns item data or null
 	for item in items:
-		if item["item_data"].id == item_id:
+		if item["item_data"].item_id == item_id:
 			return item["item_data"]
 	return null
 
 func has_item(item_id: String, quantity: int = 1) -> bool:
 	var total_quantity = 0
 	for item in items:
-		if item["item_data"].id == item_id:
+		if item["item_data"].item_id == item_id:
 			total_quantity += item["quantity"]
 			if total_quantity >= quantity:
 				return true
@@ -214,7 +214,7 @@ func has_item(item_id: String, quantity: int = 1) -> bool:
 func get_item_count(item_id: String) -> int:
 	var total = 0
 	for item in items:
-		if item["item_data"].id == item_id:
+		if item["item_data"].item_id == item_id:
 			total += item["quantity"]
 	return total
 

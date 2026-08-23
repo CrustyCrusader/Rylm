@@ -21,7 +21,7 @@ func initialize(character_ref: BaseCharacter3D) -> void:
 	update_experience_requirements()
 	print("ExperienceSystem initialized for: ", character.character_name)
 
-func add_experience(amount: float, source: String = "", skill_type: String = "") -> bool:
+func add_experience(amount: float, source: String = "", skill_type: SkillSystem.SkillType = -1) -> bool:
 	if not character or amount <= 0:
 		return false
 	
@@ -30,15 +30,15 @@ func add_experience(amount: float, source: String = "", skill_type: String = "")
 	
 	# Check for level up
 	while current_experience >= experience_to_next_level:
-		level_up()
+		_level_up()
 	
 	# Apply skill experience if skill_type provided
-	if not skill_type.is_empty() and character.skill_system:
+	if skill_type != -1 and character.skill_system:
 		character.skill_system.gain_experience(skill_type, amount)
 	
 	return true
 
-func level_up() -> void:
+func _level_up() -> void:
 	var _old_level = current_level  # Prefix with underscore since not used
 	current_level += 1
 	current_experience -= experience_to_next_level

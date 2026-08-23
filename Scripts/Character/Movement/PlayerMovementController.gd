@@ -40,6 +40,9 @@ func _handle_input() -> void:
 		is_crouching = !is_crouching
 		if is_crouching:
 			set_move_state(MoveState.CROUCHING)
+		else:
+			# Check if we can stand up
+			set_move_state(MoveState.STANDING)
 	
 	# Jump
 	if Input.is_action_just_pressed(jump_action):
@@ -57,6 +60,11 @@ func _update_state(move_direction: Vector3) -> void:
 		else:
 			if current_move_state in [MoveState.WALKING, MoveState.RUNNING]:
 				set_move_state(MoveState.STANDING)
+	elif is_crouching and character.is_on_floor():
+		if move_direction.length() > 0.1:
+			set_move_state(MoveState.CROUCHING)
+		else:
+			set_move_state(MoveState.CROUCHING)
 
 func get_movement_direction() -> Vector3:
 	# Get 2D input
@@ -66,11 +74,15 @@ func get_movement_direction() -> Vector3:
 	if input_dir.length() < 0.1:
 		return Vector3.ZERO
 	
-	# Camera-relative movement
-	if camera:
-		var camera_basis = camera.global_transform.basis
-		var forward = camera_basis.z  # Camera looks down -Z, so Z is forward
-		var right = camera_basis.x
+	# Player-relative movement (tank controls)
+	# Move relative to where the PLAYER is facing (not camera)
+	if character:
+		# Get player's forward and right directions
+		var player_basis = character.global_transform.basis
+		
+		# Player's forward is -z axis (Godot standard: forward is -z)
+		var forward = -player_basis.z
+		var right = player_basis.x
 		
 		# Flatten to horizontal plane
 		forward.y = 0
@@ -80,13 +92,16 @@ func get_movement_direction() -> Vector3:
 		forward = forward.normalized()
 		right = right.normalized()
 		
-		# Calculate direction
-		var direction = (forward * input_dir.y) + (right * input_dir.x)
+		# Calculate movement direction
+		# Forward/Backward moves along player's forward
+		# Left/Right strafes along player's right
+		var direction = (forward * -input_dir.y) + (right * input_dir.x)
 		
+		# Debug print
 		if direction.length() > 0.1:
-			print("Input: ", input_dir, " Direction: ", direction)
+			print("Input: ", input_dir, " Direction: ", direction, " Player forward: ", forward)
 		
 		return direction.normalized()
 	
 	# Fallback to global axes
-	return Vector3(-input_dir.x, 0, -input_dir.y).normalized()
+	return Vector3(input_dir.x, 0, input_dir.y).normalized()

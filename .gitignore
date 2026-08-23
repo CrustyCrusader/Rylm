@@ -1,0 +1,52 @@
+# ==========================================
+# GODOT GENERATED / LOCAL FILES
+# ==========================================
+
+.godot/
+
+# ==========================================
+# LARGE / LOCAL ASSETS
+# ==========================================
+
+Assets/
+
+# ==========================================
+# GODOT IMPORT METADATA FOR LOCAL ASSETS
+# ==========================================
+
+Assets/**/*.import
+
+# ==========================================
+# ANIMATION IMPORT METADATA
+# ==========================================
+
+Animations/**/*.import
+
+# ==========================================
+# GODOT GENERATED ANIMATION EXPORTS
+# ==========================================
+
+Animations/Exported/
+
+# ==========================================
+# TEMPORARY GODOT SCENE FILES
+# ==========================================
+
+*.tmp
+
+# ==========================================
+# DIAGNOSTIC / TEMPORARY DEVELOPMENT FILES
+# ==========================================
+
+characters_skeleton_diagnostic.gd
+characters_skeleton_diagnostic.gd.uid
+characters_skeleton_report.txt
+
+fbx_animation_diagnostic.gd
+fbx_animation_diagnostic.gd.uid
+fbx_animation_tracks.gd
+fbx_animation_tracks.gd.uid
+fbx_diagnostic.gd
+fbx_diagnostic.gd.uid
+
+humanoid_profile.tres

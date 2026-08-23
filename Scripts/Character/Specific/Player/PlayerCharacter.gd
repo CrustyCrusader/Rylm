@@ -4,8 +4,8 @@ class_name PlayerCharacter
 # Player-specific nodes
 @onready var camera_mount = $Camera_Mount
 @onready var camera = $Camera_Mount/Camera3D
-@onready var movement_controller = $PlayerMovementController
-@onready var animation_player = $AnimationPlayer
+@onready var movement_controller = $MovementController
+
 
 # Player settings
 @export var mouse_sensitivity: float = 0.002
@@ -14,6 +14,9 @@ class_name PlayerCharacter
 # Inventory UI
 var simple_inventory_ui: SimpleInventoryUI
 var inventory_open: bool = false
+
+# Hit
+var enemies_hit_this_swing: Array = []
 
 func _ready() -> void:
 	# Setup player
@@ -85,8 +88,8 @@ func _input(event: InputEvent) -> void:
 			handle_mouse_look(event.relative)
 		
 		# Attack
-		if event.is_action_pressed("attack") and not movement_locked:
-			perform_attack()
+		if event.is_action_pressed("melee_attack") and not movement_locked:
+			perform_melee_attack()
 
 func toggle_inventory() -> void:
 	print("Toggle inventory called")
@@ -110,10 +113,10 @@ func toggle_inventory() -> void:
 			simple_inventory_ui.inventory_closed.emit()
 
 func handle_mouse_look(mouse_input: Vector2) -> void:
-	# Horizontal rotation
+	# Horizontal rotation - rotate the ENTIRE PLAYER
 	rotate_y(-mouse_input.x * mouse_sensitivity)
 	
-	# Vertical rotation on camera
+	# Vertical rotation on camera ONLY
 	if camera_mount:
 		camera_mount.rotate_x(-mouse_input.y * mouse_sensitivity)
 		camera_mount.rotation.x = clamp(
@@ -125,14 +128,13 @@ func handle_mouse_look(mouse_input: Vector2) -> void:
 func _physics_process(delta: float) -> void:
 	# Parent physics
 	super._physics_process(delta)
-	
 	# Skip movement if inventory open or dead
-	if inventory_open or not is_alive:
+	if inventory_open or not is_alive or movement_locked:
 		velocity = Vector3.ZERO
 		move_and_slide()
 		return
 
-func perform_attack() -> void:
+func perform_melee_attack() -> void:
 	if not is_alive or not is_conscious:
 		return
 	
@@ -144,10 +146,9 @@ func perform_attack() -> void:
 		animation_player.play("AnimationLibrary_Godot_Standard/Punch_Jab")
 	
 	# Attack logic
-	await get_tree().create_timer(0.2).timeout
-	check_attack_hit()
+	
 
-func check_attack_hit() -> void:
+func check_hitscan_attack() -> void:
 	var space_state = get_world_3d().direct_space_state
 	var query = PhysicsRayQueryParameters3D.create(
 		global_position,
@@ -164,9 +165,24 @@ func check_attack_hit() -> void:
 	
 	movement_locked = false
 
+func enable_hitbox() -> void:
+	enemies_hit_this_swing.clear()
+	$MeleeHitbox.monitoring = true
+
+func disable_hitbox() -> void:
+	$MeleeHitbox.monitoring = false
+
+
 func _on_animation_player_animation_finished(anim_name: StringName) -> void:
 	if anim_name == "AnimationLibrary_Godot_Standard/Punch_Jab":
 		movement_locked = false
 		print("Attack animation finished")
-		# Return to movement animation
 		movement_controller._update_animations()
+
+
+func _on_melee_hitbox_body_entered(body):
+	if body in enemies_hit_this_swing:
+		return
+	if body.has_method("take_damage"):
+		body.take_damage(10, "physical", self)
+		enemies_hit_this_swing.append(body)

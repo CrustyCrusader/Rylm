@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=4 uid="uid://cb3o0rxlwcw0y"]
+[gd_scene format=4 uid="uid://cb3o0rxlwcw0y"]
 
 [ext_resource type="Script" uid="uid://43e48qcl420u" path="res://Scripts/Character/Specific/Enemy/EnemyCharacter.gd" id="1_8uf12"]
 [ext_resource type="Texture2D" uid="uid://ctbl413cioksh" path="res://Assets/Characters_psx/Textures/Character_Killer.png" id="2_0830c"]
@@ -149,42 +149,40 @@ bind/27/name = &"LeftIndexIntermediate"
 bind/27/bone = -1
 bind/27/pose = Transform3D(-0.99835163, -0.043122847, -0.037877247, 0.041966252, -0.9986436, 0.030818045, -0.039154846, 0.02917774, 0.99880743, -0.018658757, 2.1291637, 0.72620845)
 
-[node name="Enemy" type="CharacterBody3D"]
+[node name="Enemy" type="CharacterBody3D" unique_id=1867553282]
 script = ExtResource("1_8uf12")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.4995117, 0)
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=551136127]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.4995117, 0.16408455)
 shape = SubResource("CapsuleShape3D_auwsv")
 
-[node name="AIController" type="Node" parent="."]
+[node name="AIController" type="Node" parent="." unique_id=730435330]
 script = ExtResource("2_po0sg")
 metadata/_custom_type_script = "uid://dw86lpkvjk7yn"
 
-[node name="DetectionArea" type="Area3D" parent="."]
+[node name="DetectionArea" type="Area3D" parent="." unique_id=907271120]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="DetectionArea"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DetectionArea" unique_id=1058163887]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2868526, 3.5231924, -0.002776146)
 shape = SubResource("SphereShape3D_afpow")
 
-[node name="StateTimer" type="Timer" parent="."]
+[node name="StateTimer" type="Timer" parent="." unique_id=288478272]
 
-[node name="InvestigateTimer" type="Timer" parent="."]
+[node name="InvestigateTimer" type="Timer" parent="." unique_id=1005505731]
 
-[node name="AttackTimer" type="Timer" parent="."]
+[node name="AttackTimer" type="Timer" parent="." unique_id=267580371]
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=785401266]
 root_node = NodePath("../visuals/Character_Killer")
-libraries = {
-&"": SubResource("AnimationLibrary_0cdfu"),
-&"AnimationLibrary_Godot_Standard": ExtResource("3_ghaa6")
-}
+libraries/ = SubResource("AnimationLibrary_0cdfu")
+libraries/AnimationLibrary_Godot_Standard = ExtResource("3_ghaa6")
 
-[node name="visuals" type="Node3D" parent="."]
+[node name="visuals" type="Node3D" parent="." unique_id=305640179]
 
-[node name="Character_Killer" type="Node3D" parent="visuals"]
+[node name="Character_Killer" type="Node3D" parent="visuals" unique_id=1672989158]
 transform = Transform3D(-0.999987, 0, -0.005096326, 0, 1, 0, 0.005096326, 0, -0.999987, -0.03672242, 0, 0.034558773)
 
-[node name="GeneralSkeleton" type="Skeleton3D" parent="visuals/Character_Killer"]
+[node name="GeneralSkeleton" type="Skeleton3D" parent="visuals/Character_Killer" unique_id=994159341]
 unique_name_in_owner = true
 motion_scale = 2.8633008
 bones/0/name = "Hips"
@@ -304,7 +302,7 @@ bones/16/parent = 15
 bones/16/rest = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0.0007489931, 0.3158844, -0.09036683)
 bones/16/enabled = true
 bones/16/position = Vector3(0.0007489931, 0.3158844, -0.09036683)
-bones/16/rotation = Quaternion(0.06931472, 0.8351327, -0.5455837, -0.009344749)
+bones/16/rotation = Quaternion(-2.980233e-08, 1, -4.4703494e-08, 1.4901165e-08)
 bones/16/scale = Vector3(1, 1, 1)
 bones/17/name = "RightLowerArm"
 bones/17/parent = 16
@@ -419,35 +417,35 @@ bones/32/position = Vector3(-0.010785399, 0.1836672, 0.0030182814)
 bones/32/rotation = Quaternion(-0.029305844, 0.99953485, 0.008257253, 0.0017720661)
 bones/32/scale = Vector3(0.9999999, 1, 1.0000002)
 
-[node name="Character_Killer" type="MeshInstance3D" parent="visuals/Character_Killer/GeneralSkeleton"]
+[node name="Character_Killer" type="MeshInstance3D" parent="visuals/Character_Killer/GeneralSkeleton" unique_id=1924466117]
 mesh = SubResource("ArrayMesh_aebsq")
 skin = SubResource("Skin_ebkft")
 
-[node name="StatManager" type="Node" parent="."]
+[node name="StatManager" type="Node" parent="." unique_id=1870903031]
 script = ExtResource("4_1dp5w")
 metadata/_custom_type_script = "uid://4kr2wsvmu7kq"
 
-[node name="InventorySystem" type="Node" parent="."]
+[node name="UniversalInventory" type="Node" parent="." unique_id=1531818859]
 script = ExtResource("5_auwsv")
 debug_mode = null
 metadata/_custom_type_script = "uid://dt6ebgjkr4fd4"
 
-[node name="EquipmentManager" type="Node" parent="."]
+[node name="EquipmentManager" type="Node" parent="." unique_id=1906444729]
 script = ExtResource("6_8uf12")
 metadata/_custom_type_script = "uid://bc3qf8uqwigtu"
 
-[node name="FactionComponent" type="Node" parent="."]
+[node name="FactionComponent" type="Node" parent="." unique_id=996450404]
 script = ExtResource("7_auwsv")
 metadata/_custom_type_script = "uid://ctx1wbk37o6om"
 
-[node name="MovementController" type="Node" parent="."]
+[node name="MovementController" type="Node" parent="." unique_id=896500802]
 script = ExtResource("7_po0sg")
 metadata/_custom_type_script = "uid://b5fiky1kq3i45"
 
-[node name="CombatComponent" type="Node" parent="."]
+[node name="CombatComponent" type="Node" parent="." unique_id=1377984303]
 script = ExtResource("10_haro7")
 metadata/_custom_type_script = "uid://bxffh8r2a00ap"
 
-[node name="NavigationComponent" type="Node" parent="."]
+[node name="NavigationComponent" type="Node" parent="." unique_id=344869893]
 script = ExtResource("11_56vhr")
 metadata/_custom_type_script = "uid://cxvlkn110yky7"

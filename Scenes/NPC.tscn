@@ -28,7 +28,7 @@ shape = SubResource("CylinderShape3D_08fqu")
 script = ExtResource("3_lvkcq")
 metadata/_custom_type_script = "uid://4kr2wsvmu7kq"
 
-[node name="InventorySystem" type="Node" parent="."]
+[node name="UniversalInventory" type="Node" parent="."]
 script = ExtResource("4_olav4")
 metadata/_custom_type_script = "uid://dt6ebgjkr4fd4"
 

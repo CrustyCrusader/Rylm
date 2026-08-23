@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://bfijroxaium63"]
+[gd_scene format=3 uid="uid://bfijroxaium63"]
 
 [ext_resource type="Texture2D" uid="uid://b6nmibdc7p18q" path="res://Assets/Textures/SBS - Tiny Texture Pack 2 - 512x512/512x512/Dirt/Dirt_02-512x512.png" id="2_06fis"]
 [ext_resource type="Texture2D" uid="uid://b3exci450dkhm" path="res://Assets/Textures/SBS - Tiny Texture Pack 2 - 512x512/512x512/Brick/Brick_02-512x512.png" id="3_mma61"]
@@ -46,56 +46,56 @@ fog_enabled = true
 fog_light_color = Color(0.8717897, 0.9013987, 0.9553532, 1)
 fog_density = 0.007
 
-[node name="world" type="Node3D"]
+[node name="world" type="Node3D" unique_id=1486951127]
 
-[node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="." unique_id=1289850971]
 navigation_mesh = SubResource("NavigationMesh_06fis")
 
-[node name="map" type="Node3D" parent="NavigationRegion3D"]
+[node name="map" type="Node3D" parent="NavigationRegion3D" unique_id=184663623]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.382177, 0, 0)
 
-[node name="floor" type="CSGBox3D" parent="NavigationRegion3D/map" groups=["navigation"]]
+[node name="floor" type="CSGBox3D" parent="NavigationRegion3D/map" unique_id=599177177 groups=["navigation"]]
 material_override = SubResource("StandardMaterial3D_8d4ee")
 use_collision = true
 size = Vector3(100, 0.04, 100)
 
-[node name="brick" type="CSGBox3D" parent="NavigationRegion3D/map" groups=["navigation"]]
+[node name="brick" type="CSGBox3D" parent="NavigationRegion3D/map" unique_id=399525310 groups=["navigation"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.270854, 1.2685207, -2.9698074)
 material_override = SubResource("StandardMaterial3D_3la1u")
 use_collision = true
 size = Vector3(4.9873047, 2.3719482, 1)
 
-[node name="stone" type="CSGBox3D" parent="NavigationRegion3D/map" groups=["navigation"]]
+[node name="stone" type="CSGBox3D" parent="NavigationRegion3D/map" unique_id=1712561490 groups=["navigation"]]
 transform = Transform3D(0.9245729, 0, 0.38100582, 0, 0.9999999, 0, -0.3810059, 0, 0.9245725, 6.595402, 11.250387, -9.375093)
 material_override = SubResource("StandardMaterial3D_c5xim")
 use_collision = true
 size = Vector3(2, 22.379028, 41.255913)
 
-[node name="box" type="CSGBox3D" parent="NavigationRegion3D/map" groups=["navigation"]]
+[node name="box" type="CSGBox3D" parent="NavigationRegion3D/map" unique_id=789286262 groups=["navigation"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.476553, 0.68284845, 1.1492481)
 material_override = SubResource("StandardMaterial3D_b07cf")
 use_collision = true
 size = Vector3(2.5, 1.3117371, 6.7539063)
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1123823053]
 transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545, -0.50000006, 0.75, -0.43301266, 0, 0, 0)
 shadow_enabled = true
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1405187707]
 environment = SubResource("Environment_wjxug")
 
-[node name="Player" parent="." instance=ExtResource("5_efk68")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.655293, 0.037633084, 18.2737)
+[node name="Player" parent="." unique_id=1385364878 instance=ExtResource("5_efk68")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.655293, 0.14999428, 18.2737)
 
-[node name="Enemy" parent="." instance=ExtResource("7_mma61")]
+[node name="Enemy" parent="." unique_id=329987708 instance=ExtResource("7_mma61")]
 transform = Transform3D(-0.9998637, 0, -0.016510159, 0, 1, 0, 0.016510159, 0, -0.9998637, 17.462223, 0.028862715, -32.36537)
 
-[node name="Donuts" parent="." instance=ExtResource("7_ki7sg")]
+[node name="Donuts" parent="." unique_id=148126845 instance=ExtResource("7_ki7sg")]
 transform = Transform3D(11.913039, 0, 0, 0, -1.4201449e-06, 11.913038, 0, -11.913038, -1.4201449e-06, 17.310974, 0.044763163, 4.93824)
 
-[node name="medkit_basic" parent="." instance=ExtResource("8_ki7sg")]
+[node name="medkit_basic" parent="." unique_id=1902502510 instance=ExtResource("8_ki7sg")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.364222, 0.52000237, 10.633555)
 
-[node name="SimpleInventoryUI" type="CanvasLayer" parent="."]
+[node name="SimpleInventoryUI" type="CanvasLayer" parent="." unique_id=727092563]
 script = ExtResource("9_rxb08")
 metadata/_custom_type_script = "uid://bqbye26840lpb"

@@ -35,7 +35,7 @@ func _process(delta):
 	if is_attacking and attack_timer > 0:
 		attack_timer -= delta
 		if attack_timer <= 0:
-			perform_attack()
+			perform_melee_attack()
 
 func initiate_attack(target) -> bool:
 	if not character or not character.is_alive:
@@ -69,7 +69,7 @@ func can_attack() -> bool:
 			not is_attacking and 
 			Time.get_ticks_msec() - last_attack_time > 1000 / attack_speed)
 
-func perform_attack():
+func perform_melee_attack():
 	if not current_target or not current_target.has_method("take_damage"):
 		attack_missed.emit()
 		reset_attack()

@@ -1,7 +1,7 @@
 extends Node
 class_name MovementController
 
-# Signals for state and animation
+# Signals
 signal movement_state_changed(new_state)
 signal animation_requested(animation_name)
 
@@ -11,7 +11,6 @@ var character: CharacterBody3D = null
 # Movement states
 enum MoveState { STANDING, WALKING, RUNNING, CROUCHING, JUMPING }
 var current_move_state: MoveState = MoveState.STANDING
-var previous_state: MoveState = MoveState.STANDING
 
 # Movement parameters
 @export var walk_speed: float = 5.0
@@ -21,7 +20,7 @@ var previous_state: MoveState = MoveState.STANDING
 @export var acceleration: float = 15.0
 @export var deceleration: float = 20.0
 
-# Animation names with library prefix
+# Animation names
 @export var idle_animation: String = "AnimationLibrary_Godot_Standard/Idle"
 @export var walk_animation: String = "AnimationLibrary_Godot_Standard/Walk"
 @export var run_animation: String = "AnimationLibrary_Godot_Standard/Sprint"
@@ -34,7 +33,6 @@ var is_stunned: bool = false
 
 func initialize(character_node: CharacterBody3D) -> void:
 	character = character_node
-	print("MovementController: Initialized for ", character.name)
 	_update_animations()
 
 func process_movement(delta: float, direction: Vector3) -> void:
@@ -117,10 +115,7 @@ func set_move_state(new_state: MoveState) -> void:
 	if current_move_state == new_state:
 		return
 	
-	previous_state = current_move_state
 	current_move_state = new_state
-	
-	print("Movement state: ", MoveState.keys()[previous_state], " -> ", MoveState.keys()[new_state])
 	emit_signal("movement_state_changed", new_state)
 	_update_animations()
 
@@ -141,10 +136,9 @@ func _update_animations() -> void:
 			emit_signal("animation_requested", jump_animation)
 
 func jump() -> bool:
-	if character and character.is_on_floor():
+	if character and character.is_on_floor() and not is_stunned:
 		character.velocity.y = jump_velocity
 		set_move_state(MoveState.JUMPING)
-		print("Jump! Velocity: ", character.velocity)
 		return true
 	return false
 
@@ -153,3 +147,8 @@ func get_velocity() -> Vector3:
 
 func is_moving() -> bool:
 	return character and character.velocity.length() > 0.1
+
+func stop_movement() -> void:
+	if character:
+		character.velocity = Vector3.ZERO
+		set_move_state(MoveState.STANDING)

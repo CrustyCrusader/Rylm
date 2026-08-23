@@ -41,7 +41,7 @@ func initialize_default_patrol_points() -> void:
 			base_pos + Vector3(-5, 0, 0),
 			base_pos + Vector3(0, 0, -5)
 		]
-		print("Generated default patrol points")
+		print("Generated default patrol points for ", character.character_name)
 
 func process_ai(delta: float) -> void:
 	if not character or not character.is_alive:
@@ -60,11 +60,12 @@ func process_ai(delta: float) -> void:
 		AIState.INVESTIGATE:
 			process_investigate(delta)
 
-# State Processing
-func process_idle(_delta: float) -> void:
+# State Processing - FIXED: Use MovementController properly
+func process_idle(delta: float) -> void:
+	# Set idle state and no movement
 	if character and character.movement:
 		character.movement.set_move_state(character.movement.MoveState.STANDING)
-		character.velocity = Vector3.ZERO
+		character.movement.process_movement(delta, Vector3.ZERO)
 
 func process_patrol(delta: float) -> void:
 	if patrol_points.is_empty():
@@ -75,23 +76,20 @@ func process_patrol(delta: float) -> void:
 	var direction = (target_pos - character.global_position).normalized()
 	direction.y = 0
 	
+	# Check if we've reached the point
+	if character.global_position.distance_to(target_pos) < 1.5:
+		patrol_index = (patrol_index + 1) % patrol_points.size()
+		return
+	
 	# Use MovementController for movement
 	if character and character.movement:
 		character.movement.set_move_state(character.movement.MoveState.WALKING)
 		character.movement.process_movement(delta, direction)
 	
-	# Rotate toward movement direction
+	# Rotate toward movement direction (smooth rotation)
 	if direction.length() > 0.1:
-		character.look_at(character.global_position + direction, Vector3.UP)
-	
-	# Check if reached point
-	if character.global_position.distance_to(target_pos) < 1.5:
-		# Go to next point
-		patrol_index = (patrol_index + 1) % patrol_points.size()
-		set_state(AIState.IDLE)
-		# Return to patrol after idle
-		await get_tree().create_timer(randf_range(1.0, 3.0)).timeout
-		set_state(AIState.PATROL)
+		var look_target = character.global_position + direction
+		character.look_at(look_target, Vector3.UP)
 
 func process_chase(delta: float) -> void:
 	if not target or not is_instance_valid(target):
@@ -101,6 +99,16 @@ func process_chase(delta: float) -> void:
 	var direction = (target.global_position - character.global_position).normalized()
 	direction.y = 0
 	
+	# Check attack range
+	var distance = character.global_position.distance_to(target.global_position)
+	
+	if distance <= attack_range:
+		set_state(AIState.ATTACK)
+		return
+	elif distance > detection_range * 1.5:
+		target_lost()
+		return
+	
 	# Use MovementController for movement
 	if character and character.movement:
 		character.movement.set_move_state(character.movement.MoveState.RUNNING)
@@ -109,13 +117,6 @@ func process_chase(delta: float) -> void:
 	# Face target
 	if direction.length() > 0.1:
 		character.look_at(target.global_position, Vector3.UP)
-	
-	# Check attack range
-	var distance = character.global_position.distance_to(target.global_position)
-	if distance <= attack_range:
-		set_state(AIState.ATTACK)
-	elif distance > detection_range * 1.5:
-		target_lost()
 
 func process_attack(_delta: float) -> void:
 	if not target or not is_instance_valid(target):
@@ -128,7 +129,11 @@ func process_attack(_delta: float) -> void:
 	if direction.length() > 0:
 		character.look_at(target.global_position, Vector3.UP)
 	
-	# Let EnemyCharacter handle actual attack timing
+	# Stop moving while attacking - MovementController will handle this
+	if character and character.movement:
+		character.movement.set_move_state(character.movement.MoveState.STANDING)
+	
+	# Check if target moved away
 	var distance = character.global_position.distance_to(target.global_position)
 	if distance > attack_range * 1.5:
 		set_state(AIState.CHASE)
@@ -141,6 +146,11 @@ func process_investigate(delta: float) -> void:
 	var direction = (investigate_position - character.global_position).normalized()
 	direction.y = 0
 	
+	# Check if reached investigation point
+	if character.global_position.distance_to(investigate_position) < 1.5:
+		set_state(AIState.PATROL)
+		return
+	
 	if character and character.movement:
 		character.movement.set_move_state(character.movement.MoveState.WALKING)
 		character.movement.process_movement(delta, direction)
@@ -148,10 +158,6 @@ func process_investigate(delta: float) -> void:
 	# Face investigation direction
 	if direction.length() > 0.1:
 		character.look_at(character.global_position + direction, Vector3.UP)
-	
-	# Reached investigation point
-	if character.global_position.distance_to(investigate_position) < 1.5:
-		set_state(AIState.PATROL)
 
 # Public API
 func set_state(new_state: AIState) -> void:
@@ -167,6 +173,10 @@ func set_target(new_target) -> void:
 func target_lost() -> void:
 	target = null
 	set_state(AIState.PATROL)
+	if character.attack_timer:
+		character.attack_timer.stop()
+	character.can_attack = true
+	character.is_attacking = false
 	print(character.character_name, " lost target, returning to patrol")
 
 func can_see_target(check_target) -> bool:
