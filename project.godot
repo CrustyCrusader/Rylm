@@ -29,6 +29,8 @@ Item_Database="*res://Scripts/Autoload/item_database.gd"
 Game_State="*res://Scripts/Autoload/GameState.gd"
 Input_Manager="*res://Scripts/Autoload/InputManager.gd"
 PSXScreenEffects="*uid://u3y0jxl0vtmg"
+CurseDatabase="*uid://8qgw6dntekmm"
+SaveSystem="*uid://dbaw14f3aqlvu"
 
 [display]
 

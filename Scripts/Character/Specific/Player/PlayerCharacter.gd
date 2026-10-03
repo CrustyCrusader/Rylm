@@ -1,122 +1,83 @@
-extends BaseCharacter3D
 class_name PlayerCharacter
+extends BaseCharacter3D
 
 # Player-specific nodes
-@onready var camera_mount = $Camera_Mount
-@onready var camera = $Camera_Mount/Camera3D
-@onready var movement_controller = $MovementController
-
+@onready var camera_mount: Node3D = get_node_or_null("Camera_Mount")
+@onready var camera: Camera3D = get_node_or_null("Camera_Mount/Camera3D")
 
 # Player settings
 @export var mouse_sensitivity: float = 0.002
 @export var camera_pitch_limit: float = 80.0
+@export var sprint_multiplier: float = 1.5
 
 # Inventory UI
-var simple_inventory_ui: SimpleInventoryUI
+var simple_inventory_ui: Node
 var inventory_open: bool = false
 
-# Hit
-var enemies_hit_this_swing: Array = []
-
 func _ready() -> void:
-	# Setup player
 	character_name = "Player"
 	character_type = "player"
+	melee_attack_animation = "AnimationLibrary_Godot_Standard/Punch_Jab"
 	
-	# Parent initialization
 	super._ready()
 	
-	# Initialize movement controller
-	movement_controller.initialize(self)
-	
-	# Connect signals
-	movement_controller.movement_state_changed.connect(_on_movement_state_changed)
-	movement_controller.animation_requested.connect(_on_animation_requested)
-	
-	# Setup input
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-	
-	# Add to player group
 	add_to_group("player")
-	
-	# Load inventory UI
 	call_deferred("setup_inventory_ui")
-	
-	print("PlayerCharacter ready")
 
 func setup_inventory_ui() -> void:
-	var ui_scene = load("res://Scenes/SimpleInventoryUI.tscn")
-	if ui_scene:
-		simple_inventory_ui = ui_scene.instantiate()
-		get_tree().root.add_child(simple_inventory_ui)
-		simple_inventory_ui.visible = false
-		
-		if simple_inventory_ui.has_signal("inventory_closed"):
-			simple_inventory_ui.inventory_closed.connect(_on_inventory_ui_closed)
-		
-		print("Inventory UI loaded")
-	else:
-		print("ERROR: Failed to load inventory UI scene!")
-
-func _on_movement_state_changed(new_state: int) -> void:
-	print("Movement state changed to: ", MovementController.MoveState.keys()[new_state])
-
-func _on_animation_requested(animation_name: String) -> void:
-	if animation_player:
-		animation_player.play(animation_name)
-		print("Playing: ", animation_name)
+	if ResourceLoader.exists("res://Scenes/SimpleInventoryUI.tscn"):
+		var ui_scene = load("res://Scenes/SimpleInventoryUI.tscn")
+		if ui_scene:
+			simple_inventory_ui = ui_scene.instantiate()
+			get_tree().root.add_child(simple_inventory_ui)
+			simple_inventory_ui.visible = false
+			
+			if simple_inventory_ui.has_signal("inventory_closed"):
+				simple_inventory_ui.connect("inventory_closed", Callable(self, "_on_inventory_ui_closed"))
 
 func _on_inventory_ui_closed() -> void:
-	print("Inventory closed")
 	inventory_open = false
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func _input(event: InputEvent) -> void:
-	# Inventory toggle
 	if event.is_action_pressed("inventory"):
-		toggle_inventory()
-	
-	# Close inventory with ESC
-	if event.is_action_pressed("ui_cancel") and inventory_open:
 		toggle_inventory()
 		return
 	
-	# Handle other inputs only if inventory closed
+	if event.is_action_pressed("cancel") and inventory_open:
+		toggle_inventory()
+		return
+	
 	if not inventory_open:
-		# Mouse look
 		if event is InputEventMouseMotion:
 			handle_mouse_look(event.relative)
 		
-		# Attack
-		if event.is_action_pressed("melee_attack") and not movement_locked:
+		if event.is_action_pressed("melee_attack"):
 			perform_melee_attack()
 
 func toggle_inventory() -> void:
-	print("Toggle inventory called")
-	
 	if not simple_inventory_ui:
-		print("ERROR: No inventory UI!")
 		return
 	
 	inventory_open = !inventory_open
 	
 	if inventory_open:
-		# Open inventory
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-		simple_inventory_ui.open(self)
+		if simple_inventory_ui.has_method("open"):
+			simple_inventory_ui.open(self)
+		else:
+			simple_inventory_ui.visible = true
 	else:
-		# Close inventory
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-		if simple_inventory_ui.visible:
+		if simple_inventory_ui.has_method("close"):
 			simple_inventory_ui.close()
 		else:
-			simple_inventory_ui.inventory_closed.emit()
+			simple_inventory_ui.visible = false
 
 func handle_mouse_look(mouse_input: Vector2) -> void:
-	# Horizontal rotation - rotate the ENTIRE PLAYER
 	rotate_y(-mouse_input.x * mouse_sensitivity)
 	
-	# Vertical rotation on camera ONLY
 	if camera_mount:
 		camera_mount.rotate_x(-mouse_input.y * mouse_sensitivity)
 		camera_mount.rotation.x = clamp(
@@ -126,63 +87,23 @@ func handle_mouse_look(mouse_input: Vector2) -> void:
 		)
 
 func _physics_process(delta: float) -> void:
-	# Parent physics
-	super._physics_process(delta)
-	# Skip movement if inventory open or dead
 	if inventory_open or not is_alive or movement_locked:
-		velocity = Vector3.ZERO
-		move_and_slide()
+		stop_movement()
 		return
 
-func perform_melee_attack() -> void:
-	if not is_alive or not is_conscious:
-		return
-	
-	movement_locked = true
-	print("Performing attack")
-	
-	# Play attack animation
-	if animation_player:
-		animation_player.play("AnimationLibrary_Godot_Standard/Punch_Jab")
-	
-	# Attack logic
-	
+	# Calculate camera-relative movement direction
+	var input_dir := Input.get_vector("left", "right", "forward", "backward")
+	var direction := (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 
-func check_hitscan_attack() -> void:
-	var space_state = get_world_3d().direct_space_state
-	var query = PhysicsRayQueryParameters3D.create(
-		global_position,
-		global_position - global_transform.basis.z * 2.0
-	)
-	query.exclude = [self]
-	
-	var result = space_state.intersect_ray(query)
-	if result:
-		var target = result.collider
-		if target.has_method("take_damage"):
-			target.take_damage(10, "physical", self)
-			print("Player hit: ", target.name)
-	
-	movement_locked = false
+	# Apply sprint multiplier
+	var is_sprinting := Input.is_action_pressed("sprint")
+	var speed_mult := sprint_multiplier if is_sprinting else 1.0
 
-func enable_hitbox() -> void:
-	enemies_hit_this_swing.clear()
-	$MeleeHitbox.monitoring = true
+	# Assign direction to base character movement vector
+	movement = direction * speed_mult
 
-func disable_hitbox() -> void:
-	$MeleeHitbox.monitoring = false
+	if Input.is_action_just_pressed("jump"):
+		jump()
 
-
-func _on_animation_player_animation_finished(anim_name: StringName) -> void:
-	if anim_name == "AnimationLibrary_Godot_Standard/Punch_Jab":
-		movement_locked = false
-		print("Attack animation finished")
-		movement_controller._update_animations()
-
-
-func _on_melee_hitbox_body_entered(body):
-	if body in enemies_hit_this_swing:
-		return
-	if body.has_method("take_damage"):
-		body.take_damage(10, "physical", self)
-		enemies_hit_this_swing.append(body)
+	# Process movement & gravity from BaseCharacter3D
+	super._physics_process(delta)

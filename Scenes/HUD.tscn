@@ -1,42 +1,39 @@
-[gd_scene load_steps=5 format=3 uid="uid://da7qcwxtmcbds"]
+[gd_scene format=3 uid="uid://da7qcwxtmcbds"]
 
 [ext_resource type="Script" uid="uid://xawkg3end8kl" path="res://Scripts/UI/HUD/HUD.gd" id="1_sd512"]
 [ext_resource type="Texture2D" uid="uid://u03qws3g53bk" path="res://Assets/Textures/HUD/HealthBarTextureUnder.png" id="2_s3jbq"]
 [ext_resource type="Texture2D" uid="uid://fiucdovgxnve" path="res://Assets/Textures/HUD/HealthBarTextureOver.png" id="3_c3eba"]
 [ext_resource type="Texture2D" uid="uid://dt1x7n66iq5p5" path="res://Assets/Textures/HUD/HealthBarTextureProgress.png" id="4_g8s2e"]
 
-[node name="CanvasLayer" type="CanvasLayer"]
+[sub_resource type="ViewportTexture" id="ViewportTexture_gqeqo"]
+viewport_path = NodePath("Control/SubViewport")
+
+[node name="CanvasLayer" type="CanvasLayer" unique_id=82511552]
 script = ExtResource("1_sd512")
 
-[node name="Control" type="Control" parent="."]
+[node name="Control" type="Control" parent="." unique_id=1781573588]
 layout_mode = 3
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
+metadata/_edit_use_anchors_ = true
 
-[node name="HealthBar" type="TextureProgressBar" parent="Control"]
+[node name="HealthBar" type="TextureProgressBar" parent="Control" unique_id=423376871]
+unique_name_in_owner = true
+texture_filter = 1
 layout_mode = 1
-offset_left = 1.0000002
-offset_top = 1.9999995
-offset_right = 152.19327
-offset_bottom = 28.999998
-scale = Vector2(1.4749334, 1)
-value = 100.0
+scale = Vector2(0.065, 0.12)
+value = 99.0
 texture_under = ExtResource("2_s3jbq")
 texture_over = ExtResource("3_c3eba")
 texture_progress = ExtResource("4_g8s2e")
-texture_progress_offset = Vector2(155.87, 50.325)
+texture_progress_offset = Vector2(155.885, 51.86)
 
-[node name="StaminaBar" type="TextureProgressBar" parent="Control"]
+[node name="StaminaBar" type="TextureProgressBar" parent="Control" unique_id=503320163]
+unique_name_in_owner = true
 layout_mode = 0
-offset_top = 65.0
-offset_right = 40.0
-offset_bottom = 105.0
-scale = Vector2(8.599997, 1)
-
-[node name="WeightLabel" type="Label" parent="Control"]
-layout_mode = 0
-offset_top = 120.99999
-offset_right = 40.0
-offset_bottom = 144.0
-scale = Vector2(0.48961103, 1.4720777)
+offset_left = 3.0
+offset_top = 15.0
+offset_right = 515.0
+offset_bottom = 527.0
+scale = Vector2(0.1, 0.005)
+value = 100.0
+texture_progress = SubResource("ViewportTexture_gqeqo")
+tint_progress = Color(0.43078652, 0.987567, 0.4395748, 1)

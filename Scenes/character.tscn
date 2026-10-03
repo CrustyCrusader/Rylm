@@ -1,7 +1,0 @@
-[gd_scene format=3 uid="uid://bl3cjgbjrac0w"]
-
-[node name="Character" type="CharacterBody3D" unique_id=228782096]
-
-[node name="CharacterContainer" type="Node3D" parent="." unique_id=784672425]
-
-[node name="CharacterModel" type="Node3D" parent="." unique_id=1750037429]

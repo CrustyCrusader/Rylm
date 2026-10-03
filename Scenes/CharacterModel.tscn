@@ -1,7 +1,6 @@
 [gd_scene format=4 uid="uid://dywu71vlhs52h"]
 
 [ext_resource type="Texture2D" uid="uid://c8kyt4f1nv0oa" path="res://Assets/Characters_psx/Textures/Character_Female_09.png" id="1_ks8hv"]
-[ext_resource type="PackedScene" uid="uid://cx5tv8obhkd42" path="res://Assets/Characters_psx/Models/Male/Character_02.fbx" id="2_0fxia"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_etuk7"]
 resource_name = "Character_Female_09"
@@ -17718,6 +17717,3 @@ anim_player = NodePath("../AnimationPlayer")
 libraries/ = SubResource("AnimationLibrary_k8dkk")
 libraries/All = SubResource("AnimationLibrary_0fxia")
 libraries/AnimationLibrary_Godot_Standard = SubResource("AnimationLibrary_rbvrw")
-
-[node name="Character_02" parent="." unique_id=562109658 instance=ExtResource("2_0fxia")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.0579906, 0, -0.21320343)

@@ -1,34 +1,38 @@
-[gd_scene load_steps=2 format=3 uid="uid://b3jatp143vi2n"]
+[gd_scene format=3 uid="uid://b3jatp143vi2n"]
 
 [ext_resource type="Script" uid="uid://bqbye26840lpb" path="res://Scripts/UI/SimpleInventoryUI.gd" id="1_3obky"]
 
-[node name="SimpleInventoryUI" type="CanvasLayer"]
+[node name="SimpleInventoryUI" type="CanvasLayer" unique_id=458848478]
 script = ExtResource("1_3obky")
 
-[node name="Panel" type="Panel" parent="."]
-offset_right = 247.2
-offset_bottom = 400.0
+[node name="Panel" type="Panel" parent="." unique_id=637042687]
+offset_left = 39.999996
+offset_top = 58.999996
+offset_right = 287.19998
+offset_bottom = 459.0
+scale = Vector2(0.6790237, 0.25411633)
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel" unique_id=784303715]
 layout_mode = 0
 offset_left = 5.0
 offset_top = -2.0
 offset_right = 252.22
 offset_bottom = 398.0
+scale = Vector2(1, 1.04)
 
-[node name="ItemList" type="ItemList" parent="Panel/VBoxContainer"]
+[node name="ItemList" type="ItemList" parent="Panel/VBoxContainer" unique_id=1776092423]
 layout_mode = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="Panel/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/VBoxContainer" unique_id=956656983]
 layout_mode = 2
 
-[node name="WeightLabel" type="Label" parent="Panel/VBoxContainer/HBoxContainer"]
+[node name="WeightLabel" type="Label" parent="Panel/VBoxContainer/HBoxContainer" unique_id=1319650774]
 layout_mode = 2
 
-[node name="CapacityLabel" type="Label" parent="Panel/VBoxContainer/HBoxContainer"]
+[node name="CapacityLabel" type="Label" parent="Panel/VBoxContainer/HBoxContainer" unique_id=1888010247]
 layout_mode = 2
 
-[node name="CloseButton" type="Button" parent="Panel/VBoxContainer"]
+[node name="CloseButton" type="Button" parent="Panel/VBoxContainer" unique_id=500111282]
 layout_mode = 2
 size_flags_horizontal = 8
 text = "x"

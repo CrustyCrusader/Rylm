@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://dbxbvedhq5d3m"]
+[gd_scene format=3 uid="uid://dbxbvedhq5d3m"]
 
 [ext_resource type="Script" uid="uid://chwk4b7sp2ipo" path="res://Scripts/Character/Core/BaseCharacter3D.gd" id="1_iy7e0"]
 [ext_resource type="PackedScene" uid="uid://dywu71vlhs52h" path="res://Scenes/CharacterModel.tscn" id="2_co0b2"]
@@ -12,34 +12,35 @@
 height = 4.202881
 radius = 0.5571289
 
-[node name="NPC" type="CharacterBody3D"]
+[node name="NPC" type="CharacterBody3D" unique_id=814406831]
 script = ExtResource("1_iy7e0")
 metadata/_custom_type_script = "uid://chwk4b7sp2ipo"
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=520470482]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.201294, -0.13259101)
 shape = SubResource("CylinderShape3D_08fqu")
 
-[node name="visuals" type="Node3D" parent="."]
+[node name="visuals" type="Node3D" parent="." unique_id=1894403189]
 
-[node name="Character_Female_09" parent="visuals" instance=ExtResource("2_co0b2")]
+[node name="Character_Female_09" parent="visuals" unique_id=1525877234 instance=ExtResource("2_co0b2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.042464256, 0.018430233, -0.024715424)
 
-[node name="StatManager" type="Node" parent="."]
+[node name="StatManager" type="Node" parent="." unique_id=1556084382]
 script = ExtResource("3_lvkcq")
 metadata/_custom_type_script = "uid://4kr2wsvmu7kq"
 
-[node name="UniversalInventory" type="Node" parent="."]
+[node name="UniversalInventory" type="Node" parent="." unique_id=761847480]
 script = ExtResource("4_olav4")
 metadata/_custom_type_script = "uid://dt6ebgjkr4fd4"
 
-[node name="EquipmentManager" type="Node" parent="."]
+[node name="EquipmentManager" type="Node" parent="." unique_id=721275980]
 script = ExtResource("5_i8vcl")
 metadata/_custom_type_script = "uid://bc3qf8uqwigtu"
 
-[node name="FactionComponent" type="Node" parent="."]
+[node name="FactionComponent" type="Node" parent="." unique_id=914778324]
 script = ExtResource("6_lyisy")
 metadata/_custom_type_script = "uid://ctx1wbk37o6om"
 
-[node name="MovementController" type="Node" parent="."]
+[node name="MovementController" type="Node" parent="." unique_id=1642435967]
 script = ExtResource("7_g27ot")
 metadata/_custom_type_script = "uid://b5fiky1kq3i45"

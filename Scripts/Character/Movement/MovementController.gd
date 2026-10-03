@@ -2,8 +2,8 @@ extends Node
 class_name MovementController
 
 # Signals
-signal movement_state_changed(new_state)
-signal animation_requested(animation_name)
+signal movement_state_changed(new_state: MoveState)
+signal animation_requested(animation_name: String)
 
 # Character reference
 var character: CharacterBody3D = null
@@ -39,7 +39,6 @@ func process_movement(delta: float, direction: Vector3) -> void:
 	if not character or is_stunned:
 		return
 	
-	# Handle movement based on current state
 	match current_move_state:
 		MoveState.STANDING:
 			_handle_standing(delta, direction)
@@ -55,15 +54,12 @@ func process_movement(delta: float, direction: Vector3) -> void:
 	# Apply gravity
 	if not character.is_on_floor():
 		character.velocity.y -= 9.8 * delta
-		# Switch to jump state if falling
 		if current_move_state != MoveState.JUMPING and character.velocity.y < 0:
 			set_move_state(MoveState.JUMPING)
 	else:
-		# Reset vertical velocity on floor
 		if character.velocity.y < 0:
 			character.velocity.y = 0
-		# Land from jump state
-		if current_move_state == MoveState.JUMPING and character.is_on_floor():
+		if current_move_state == MoveState.JUMPING:
 			if direction.length() > 0.1:
 				if Input.is_action_pressed("sprint"):
 					set_move_state(MoveState.RUNNING)
@@ -72,68 +68,21 @@ func process_movement(delta: float, direction: Vector3) -> void:
 			else:
 				set_move_state(MoveState.STANDING)
 	
-	# Move the character
 	character.move_and_slide()
 
-func _handle_standing(delta: float, _direction: Vector3) -> void:
-	character.velocity.x = move_toward(character.velocity.x, 0, deceleration * delta)
-	character.velocity.z = move_toward(character.velocity.z, 0, deceleration * delta)
-
-func _handle_walking(delta: float, direction: Vector3) -> void:
-	if direction.length() > 0.1:
-		var target_velocity = direction * walk_speed * speed_multiplier
-		character.velocity.x = move_toward(character.velocity.x, target_velocity.x, acceleration * delta)
-		character.velocity.z = move_toward(character.velocity.z, target_velocity.z, acceleration * delta)
+# High-level directional movement handler
+func handle_directional_input(delta: float, direction: Vector3, is_sprinting: bool = false, is_crouching: bool = false) -> void:
+	if is_crouching:
+		set_move_state(MoveState.CROUCHING)
+	elif direction.length() > 0.1:
+		if is_sprinting:
+			set_move_state(MoveState.RUNNING)
+		else:
+			set_move_state(MoveState.WALKING)
 	else:
-		_handle_standing(delta, direction)
+		set_move_state(MoveState.STANDING)
 
-func _handle_running(delta: float, direction: Vector3) -> void:
-	if direction.length() > 0.1:
-		var target_velocity = direction * run_speed * speed_multiplier
-		character.velocity.x = move_toward(character.velocity.x, target_velocity.x, acceleration * delta)
-		character.velocity.z = move_toward(character.velocity.z, target_velocity.z, acceleration * delta)
-	else:
-		_handle_standing(delta, direction)
-
-func _handle_crouching(delta: float, direction: Vector3) -> void:
-	if direction.length() > 0.1:
-		var target_velocity = direction * crouch_speed * speed_multiplier
-		character.velocity.x = move_toward(character.velocity.x, target_velocity.x, acceleration * 0.5 * delta)
-		character.velocity.z = move_toward(character.velocity.z, target_velocity.z, acceleration * 0.5 * delta)
-	else:
-		character.velocity.x = move_toward(character.velocity.x, 0, deceleration * 0.5 * delta)
-		character.velocity.z = move_toward(character.velocity.z, 0, deceleration * 0.5 * delta)
-
-func _handle_jumping(delta: float, direction: Vector3) -> void:
-	# Air control
-	if direction.length() > 0.1:
-		var target_velocity = direction * walk_speed * speed_multiplier * 0.3
-		character.velocity.x = move_toward(character.velocity.x, target_velocity.x, acceleration * 0.3 * delta)
-		character.velocity.z = move_toward(character.velocity.z, target_velocity.z, acceleration * 0.3 * delta)
-
-func set_move_state(new_state: MoveState) -> void:
-	if current_move_state == new_state:
-		return
-	
-	current_move_state = new_state
-	emit_signal("movement_state_changed", new_state)
-	_update_animations()
-
-func _update_animations() -> void:
-	if not character:
-		return
-	
-	match current_move_state:
-		MoveState.STANDING:
-			emit_signal("animation_requested", idle_animation)
-		MoveState.WALKING:
-			emit_signal("animation_requested", walk_animation)
-		MoveState.RUNNING:
-			emit_signal("animation_requested", run_animation)
-		MoveState.CROUCHING:
-			emit_signal("animation_requested", crouch_animation)
-		MoveState.JUMPING:
-			emit_signal("animation_requested", jump_animation)
+	process_movement(delta, direction)
 
 func jump() -> bool:
 	if character and character.is_on_floor() and not is_stunned:
@@ -142,13 +91,71 @@ func jump() -> bool:
 		return true
 	return false
 
+func stop_movement() -> void:
+	if character:
+		character.velocity.x = 0.0
+		character.velocity.z = 0.0
+		set_move_state(MoveState.STANDING)
+
+func set_move_state(new_state: MoveState) -> void:
+	if current_move_state == new_state:
+		return
+	current_move_state = new_state
+	movement_state_changed.emit(new_state)
+	_update_animations()
+
+func _update_animations() -> void:
+	if not character:
+		return
+	match current_move_state:
+		MoveState.STANDING:
+			animation_requested.emit(idle_animation)
+		MoveState.WALKING:
+			animation_requested.emit(walk_animation)
+		MoveState.RUNNING:
+			animation_requested.emit(run_animation)
+		MoveState.CROUCHING:
+			animation_requested.emit(crouch_animation)
+		MoveState.JUMPING:
+			animation_requested.emit(jump_animation)
+
+func _handle_standing(delta: float, _direction: Vector3) -> void:
+	character.velocity.x = move_toward(character.velocity.x, 0, deceleration * delta)
+	character.velocity.z = move_toward(character.velocity.z, 0, deceleration * delta)
+
+func _handle_walking(delta: float, direction: Vector3) -> void:
+	if direction.length() > 0.1:
+		var target_vel = direction * walk_speed * speed_multiplier
+		character.velocity.x = move_toward(character.velocity.x, target_vel.x, acceleration * delta)
+		character.velocity.z = move_toward(character.velocity.z, target_vel.z, acceleration * delta)
+	else:
+		_handle_standing(delta, direction)
+
+func _handle_running(delta: float, direction: Vector3) -> void:
+	if direction.length() > 0.1:
+		var target_vel = direction * run_speed * speed_multiplier
+		character.velocity.x = move_toward(character.velocity.x, target_vel.x, acceleration * delta)
+		character.velocity.z = move_toward(character.velocity.z, target_vel.z, acceleration * delta)
+	else:
+		_handle_standing(delta, direction)
+
+func _handle_crouching(delta: float, direction: Vector3) -> void:
+	if direction.length() > 0.1:
+		var target_vel = direction * crouch_speed * speed_multiplier
+		character.velocity.x = move_toward(character.velocity.x, target_vel.x, acceleration * 0.5 * delta)
+		character.velocity.z = move_toward(character.velocity.z, target_vel.z, acceleration * 0.5 * delta)
+	else:
+		character.velocity.x = move_toward(character.velocity.x, 0, deceleration * 0.5 * delta)
+		character.velocity.z = move_toward(character.velocity.z, 0, deceleration * 0.5 * delta)
+
+func _handle_jumping(delta: float, direction: Vector3) -> void:
+	if direction.length() > 0.1:
+		var target_vel = direction * walk_speed * speed_multiplier * 0.3
+		character.velocity.x = move_toward(character.velocity.x, target_vel.x, acceleration * 0.3 * delta)
+		character.velocity.z = move_toward(character.velocity.z, target_vel.z, acceleration * 0.3 * delta)
+
 func get_velocity() -> Vector3:
 	return character.velocity if character else Vector3.ZERO
 
 func is_moving() -> bool:
 	return character and character.velocity.length() > 0.1
-
-func stop_movement() -> void:
-	if character:
-		character.velocity = Vector3.ZERO
-		set_move_state(MoveState.STANDING)

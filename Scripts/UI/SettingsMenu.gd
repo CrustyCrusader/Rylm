@@ -8,7 +8,7 @@ class_name SettingsMenu
 @onready var load_button = $Panel/VBoxContainer/LoadButton
 @onready var quit_button = $Panel/VBoxContainer/QuitButton
 
-var save_system = SimpleSaveSystem.new()
+var save_system = SaveSystemline.new()
 
 func _ready():
 	panel.visible = false
